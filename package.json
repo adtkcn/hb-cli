@@ -1,0 +1,24 @@
+{
+  "name": "@adtkcn/hb-cli",
+  "version": "1.0.1",
+  "description": "",
+  "main": "./bin/index.js",
+  "bin": {
+    "hb-cli": "./bin/index.js"
+  },
+  "scripts": {
+    "publish": "npm publish --access public",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dayjs": "^1.11.1",
+    "iconv-lite": "^0.6.3",
+    "inquirer": "^8.2.2",
+    "json5": "^2.2.1",
+    "koa": "^2.13.4",
+    "koa-router": "^10.1.1",
+    "koa-static": "^5.0.0"
+  }
+}

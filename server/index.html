@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Document</title>
+	<style>
+		html,
+		body {
+			height: 100%;
+			background-color: #ccc;
+		}
+
+		.qrcodeContainer {
+			text-align: center;
+			padding-top: 50px;
+
+		}
+
+		#qrcode {
+			height: 300px;
+			width: 300px;
+			display: inline-block;
+			padding: 10px;
+			box-sizing: border-box;
+			background-color: #fff;
+		}
+
+		#qrcode img {
+			width: 100%;
+		}
+
+		.tips,
+		.path {
+			text-align: center;
+			font-size: 18px;
+			font-weight: 600;
+			padding: 30px 0 10px;
+			word-break: break-all;
+		}
+
+		.path {
+			font-size: 14px;
+			cursor: pointer;
+		}
+	</style>
+</head>
+
+<body>
+
+	<div class="qrcodeContainer">
+		<div id="qrcode">
+
+		</div>
+	</div>
+	<div class="tips">
+		扫码二维码下载App，手机需与电脑在同一局域网
+	</div>
+	<div class="path" id="path">
+
+	</div>
+
+
+	<script src="js/url.min.js"></script>
+	<script src="js/qrcode.min.js"></script>
+	<script>
+		var qrcodeText = location.origin + "/download?link=" + encodeURIComponent(url("?link"));
+
+
+
+
+		var path = document.getElementById("path");
+		path.innerHTML = url("?link");
+
+
+		path.onclick = function () {
+			fetch('/open?link=' + url("?link"))
+				.then(function (response) {
+					return response.json();
+				})
+				.then(function (myJson) {
+					console.log(myJson);
+				});
+		}
+		var qrcode = new QRCode(document.getElementById("qrcode"), {
+			text: qrcodeText,
+			width: 1000,
+			height: 1000,
+			colorDark: "#000000",
+			colorLight: "#ffffff",
+			correctLevel: QRCode.CorrectLevel.L
+		});
+
+	</script>
+</body>
+
+</html>
