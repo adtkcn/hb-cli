@@ -1,16 +1,16 @@
 {
   "name": "@adtkcn/hb-cli",
   "version": "1.0.1",
-  "description": "",
+  "description": "用于uniapp的打包工具，可切换环境变量，切换证书，更改版本，wifi调试",
   "main": "./bin/index.js",
   "bin": {
-    "hb-cli": "./bin/index.js"
+    "hb-cli": "bin/index.js"
   },
   "scripts": {
     "publish": "npm publish --access public",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "author": "adtkcn",
   "license": "ISC",
   "dependencies": {
     "dayjs": "^1.11.1",
@@ -20,5 +20,25 @@
     "koa": "^2.13.4",
     "koa-router": "^10.1.1",
     "koa-static": "^5.0.0"
-  }
+  },
+  "directories": {
+    "doc": "doc"
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/adtkcn/hb-cli.git"
+  },
+  "keywords": [
+    "uniapp",
+    "cli",
+    "env",
+    "打包",
+    "环境变量",
+    "wifi"
+  ],
+  "bugs": {
+    "url": "https://github.com/adtkcn/hb-cli/issues"
+  },
+  "homepage": "https://github.com/adtkcn/hb-cli#readme"
 }

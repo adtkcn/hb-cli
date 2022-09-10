@@ -1,17 +1,21 @@
-<!-- dotenv -->
-
 # 全局安装
 
 ```
 npm i -g @adtkcn/hb-cli
 ```
-
+# 功能
+1. 快速打包安卓/ios App
+2. 切换环境变量，生成
+3. 切换不同配置参数
+4. 更改版本
+5. wifi调试
 # 运行
 
 1. 全局安装 @adtkcn/hb-cli
 2. 在项目下创建 HBuilderConfig.json
-3. 在项目下运行命令
-
+3. 系统变量里加入 HBuilder，指向 HBuilder 安装目录
+![环境变量](./doc/env.png)
+4. 在项目下运行命令
 ```bash
 hb-cli
 ```
@@ -25,55 +29,90 @@ https://hx.dcloud.net.cn/cli/pack?id=config
 ```json5
 {
   //项目名字或项目绝对路径
-  project: "",
+  "project": "",
   //打包平台 默认值android  值有"android","ios" 如果要打多个逗号隔开打包平台
-  platform: "android,ios",
+  "platform": "android,ios",
   //是否使用自定义基座 默认值false  true自定义基座 false自定义证书
-  iscustom: false,
+  "iscustom": false,
   //打包方式是否为安心打包默认值false,true安心打包,false传统打包
-  safemode: true,
+  "safemode": true,
   //android打包参数
-  android: {
+  "android": {
     //安卓包名
-    packagename: "",
+    "packagename": "",
     //安卓打包类型 默认值0 0 使用自有证书 1 使用公共证书 2 使用老版证书 3 在线证书
-    androidpacktype: "3",
+    "androidpacktype": "3",
     //安卓使用自有证书自有打包证书参数
     //安卓打包证书别名,自有证书打包填写的参数
-    certalias: "",
+    "certalias": "",
     //安卓打包证书文件路径,自有证书打包填写的参数,  -------------相对路径(官方本身配置需要绝对路径,我考虑到切换电脑不方便,改为相对路径)-----
-    certfile: "",
+    "certfile": "",
     //安卓打包证书密码,自有证书打包填写的参数
-    certpassword: "",
+    "certpassword": "",
     //安卓平台要打的渠道包 取值有"google","yyb","360","huawei","xiaomi","oppo","vivo"，如果要打多个逗号隔开
-    channels: "",
+    "channels": "",
   },
   //ios打包参数
-  ios: {
+  "ios": {
     //ios appid
-    bundle: "uni.UNID8AA064",
+    "bundle": "uni.UNID8AA064",
     //ios打包支持的设备类型 默认值iPhone 值有"iPhone","iPad" 如果要打多个逗号隔开打包平台
-    supporteddevice: "iPhone,iPad",
+    "supporteddevice": "iPhone,iPad",
     //iOS打包是否打越狱包,只有值为true时打越狱包,false打正式包
-    isprisonbreak: false,
+    "isprisonbreak": false,
     //iOS使用自定义证书打包的profile文件路径
-    profile: "", //-------------相对路径(官方本身配置需要绝对路径,我考虑到切换电脑不方便,改为相对路径)-----
+    "profile": "", //-----相对路径(官方本身配置需要绝对路径,我考虑到切换电脑不方便,改为相对路径)-----
     //iOS使用自定义证书打包的p12文件路径
-    certfile: "", //-------------相对路径(官方本身配置需要绝对路径,我考虑到切换电脑不方便,改为相对路径)-----
+    "certfile": "", //-----相对路径(官方本身配置需要绝对路径,我考虑到切换电脑不方便,改为相对路径)-----
     //iOS使用自定义证书打包的证书密码
-    certpassword: "",
+    "certpassword": "",
   },
   //是否混淆 true混淆 false关闭
-  isconfusion: false,
+  "isconfusion": false,
   //开屏广告 true打开 false关闭
-  splashads: false,
+  "splashads": false,
   //悬浮红包广告true打开 false关闭
-  rpads: false,
+  "rpads": false,
   //push广告 true打开 false关闭
-  pushads: false,
+  "pushads": false,
   //加入换量联盟 true加入 false不加入
-  exchange: false,
+  "exchange": false,
 
-  // "hb-cli": {}
+  "hb_cli": {
+    "env":{
+      "base": {
+        // 基础,其他任意选项会合并base变量
+        // HBuilderConfig 属性，可定义上方除hb_cli的所有属性，以实现切换证书之类的操作
+        // 除HBuilderConfig 属性外，都会输出到HBuilderEnv.js 文件，实现app内切换环境变量
+        "url": "https://base.a.cn",
+        "HBuilderConfig": {
+          "exchange": true,
+          "android": {
+            "packagename": "cn.a.base"
+          }
+        }
+      },
+      "prod": { //会合并base
+        "url": "https://prod.a.cn",
+        "HBuilderConfig": {
+          "exchange": false,
+          "android": {
+            "packagename": "cn.a.prod"
+          }
+        }
+      },
+    }
+  },
 }
+```
+## Git需要忽略的文件
+```
+.hbuilderx/HBuilderConfigTemp.json
+.hbuilderx/IpFile.json
+```
+
+wifi调试原理
+```
+D:\办公软件\HBuilderX\plugins\launcher\tools\adbs\adb.exe tcpip 5555
+D:\办公软件\HBuilderX\plugins\launcher\tools\adbs\adb.exe connect 192.168.3.2
 ```

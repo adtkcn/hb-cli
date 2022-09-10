@@ -10,20 +10,51 @@ const config = require("../config/config.js");
 var workDir = process.cwd();
 console.log("workDir", workDir);
 
-/**
- *获取 HBuilder的Cli路径
- *
- * @return {string} HBuilderCli
- */
-function GetHBuilderCli() {
-  var HBuilderDir = "";
-  if (process.env.HBuilder) {
-    HBuilderDir = process.env.HBuilder;
-  }
-  HBuilderDir = path.join(HBuilderDir, "cli");
-  console.log("HBuilderDir完整路径: ", HBuilderDir);
-  return HBuilderDir;
+function OpenWifiDebug() {
+  return new Promise(async (resolve, reject) => {
+    try {
+      var ls = cp.spawn(config.HBuilderAdb, ["tcpip", "5555"], {});
+      ls.on("exit", function (code) {
+        if (code === 0) {
+          console.log("OpenWifiDebug 成功");
+          // 等待时间
+          setTimeout(() => {
+            resolve(0);
+          }, 2000);
+        } else {
+          console.log("OpenWifiDebug 失败" + code);
+          reject(code);
+        }
+      });
+    } catch (error) {
+      console.log("OpenWifiDebug 状态", error);
+      reject(1);
+    }
+  });
 }
+function ConnectPhoneWithWifi(ip) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      var ls = cp.spawn(config.HBuilderAdb, ["connect", ip], {});
+      ls.on("exit", function (code) {
+        if (code === 0) {
+          console.log("ConnectPhoneWithWifi 完成不一定成功", code);
+          // 等待时间
+          setTimeout(() => {
+            resolve(0);
+          }, 2000);
+        } else {
+          console.log("ConnectPhoneWithWifi 失败", code);
+          reject(code);
+        }
+      });
+    } catch (error) {
+      console.log("ConnectPhoneWithWifi 异常", error);
+      reject(1);
+    }
+  });
+}
+
 /**
  * 打开HBuilder编辑器
  * @returns
@@ -40,21 +71,21 @@ function OpenHBuilder() {
         reject(1);
         return;
       }
-      var HBuilderCli = GetHBuilderCli();
-      var ls = cp.spawn(HBuilderCli, ["open"], {});
+      console.log("OpenHBuilder", config.HBuilderCli);
+      var ls = cp.spawn(config.HBuilderCli, ["open"], {});
       ls.on("exit", function (code) {
         console.log("openHBuilder 状态： " + code);
         if (code === 0) {
+          // 给hbuilder加载时间
           setTimeout(() => {
             resolve(0);
-          }, 1000);
+          }, 4000);
         } else {
-          callback && callback(code);
           reject(code);
         }
       });
     } catch (error) {
-      console.log("error", error);
+      console.log("OpenHBuilder", error);
       reject(1);
     }
   });
@@ -70,11 +101,11 @@ function getLocalIP() {
   const netInfo = os.networkInterfaces(); //网络信息
   let ip = "";
 
-  console.log(osType, netInfo);
+  // console.log(osType, netInfo);
 
   if (osType === "Windows_NT") {
     for (let dev in netInfo) {
-      console.log(dev);
+      // console.log(dev);
       //win7的网络信息中显示为本地连接，win10显示为以太网
       if (dev === "本地连接" || dev === "以太网" || dev == "WLAN") {
         for (let j = 0; j < netInfo[dev].length; j++) {
@@ -115,17 +146,18 @@ function openDefaultBrowser(url) {
  */
 function readConfig(FileName) {
   return new Promise((resolve, reject) => {
-    var ConfigFilePath = path.join(workDir, FileName);
-    fs.readFile(ConfigFilePath, function (err, data) {
+    fs.readFile(FileName, function (err, data) {
       if (err) {
-        reject("读取配置文件错误,检查是否存在" + ConfigFilePath);
+        reject("读取配置文件错误,检查是否存在" + FileName);
         return;
       }
       var d = String(data);
       try {
         var c = JSON5.parse(d);
+        // console.log("readConfig", c);
         resolve(c);
       } catch (error) {
+        console.log(error);
         reject(error);
       }
     });
@@ -190,12 +222,10 @@ function MergeManifestConfig(ManifestConfig = {}, info = {}) {
  * @param { CallbackHandler } callback
  */
 function buildAppCli(HBuilderConfigFileTemp, callback) {
-  var HBuilderCli = GetHBuilderCli();
-
   // D:\办公\HBuilderX\cli pack --config e:\icpc_workspace_2\shougang\APP\zdhlAliyunApp\HBuilderConfig.json
-  console.log(HBuilderCli, ["pack", "--config", HBuilderConfigFileTemp]);
+  console.log(config.HBuilderCli, ["pack", "--config", HBuilderConfigFileTemp]);
 
-  var pack = cp.spawn(HBuilderCli, [
+  var pack = cp.spawn(config.HBuilderCli, [
     "pack",
     "--config",
     HBuilderConfigFileTemp,
@@ -253,14 +283,10 @@ function buildApp() {
               .replace(/\n/g, "")
               .replace(/(\s*$)/g, "");
 
-            // if (process.platform == "win32") {
-            //   cp.exec("explorer.exe /select," + newAppPath);
-            // }
-
             var link = encodeURIComponent(newAppPath);
             var url = `http://${getLocalIP()}:${config.port}?link=${link}`;
             console.log("地址：", url);
-            console.log("ctrl+c 可以关闭终端");
+            console.log("使用 ctrl+c 关闭终端");
             openDefaultBrowser(url);
           }
         } else if (code == -3 && data) {
@@ -275,7 +301,6 @@ function buildApp() {
   });
 }
 module.exports = {
-  GetHBuilderCli,
   openDefaultBrowser,
   getLocalIP,
   readConfig,
@@ -283,4 +308,7 @@ module.exports = {
   MergeManifestConfig,
   WriteConfig,
   buildApp,
+  OpenHBuilder,
+  OpenWifiDebug,
+  ConnectPhoneWithWifi,
 };
