@@ -167,7 +167,7 @@ async function main() {
         );
       }
       if (
-        answers.function == "改版本号" &&
+        (answers.function == "改版本号" || answers.function == "打包") &&
         answers.updateVersion != "不更改版本"
       ) {
         manifest.versionName = answers.updateVersion;
