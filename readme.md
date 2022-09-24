@@ -4,11 +4,14 @@
 npm i -g @adtkcn/hb-cli
 ```
 # 功能
-1. 快速打包安卓/ios App
-2. 切换环境变量，生成
-3. 切换不同配置参数
-4. 更改版本
+1. 简化打包安卓/ios App
+2. 切换环境变量，根据配置中`hb_cli.env.*`生成js文件
+3. 切换不同配置参数，根据配置中`hb_cli.env.*.HBuilderConfig`生成不同的配置文件
+4. 更改版本号
 5. wifi调试
+6. 自动下载ios包到本地
+7. 自动上传安装包到`hb_cli.env.uploadUrl`指定地址
+
 # 运行
 
 1. 全局安装 @adtkcn/hb-cli
@@ -28,7 +31,7 @@ https://hx.dcloud.net.cn/cli/pack?id=config
 
 ```json5
 {
-  //项目名字或项目绝对路径
+  //项目的目录名字或项目绝对路径
   "project": "",
   //打包平台 默认值android  值有"android","ios" 如果要打多个逗号隔开打包平台
   "platform": "android,ios",
@@ -79,6 +82,7 @@ https://hx.dcloud.net.cn/cli/pack?id=config
   "exchange": false,
 
   "hb_cli": {
+    "uploadUrl": "http://127.0.0.1:1080/api/file/upload",// 如果配置，将会自动上传
     "env":{
       "base": {
         // 基础,其他任意选项会合并base变量
@@ -105,6 +109,18 @@ https://hx.dcloud.net.cn/cli/pack?id=config
   },
 }
 ```
+## 配置文件说明
+
+`hb_cli`目录是本插件自定义属性，可忽略，其他都是hbuilder官方配置
+
+`hb_cli.uploadUrl` 上传接口路径： 如果配置，将会自动上传
+ 
+`hb_cli.env` 环境变量，执行hb-cli命令时选择`环境变量`,将会选择对应的key，选择任意key都会合并base对象，生成HBuilderEnv.js文件
+
+`hb_cli.env.*.HBuilderConfig` 会对hbuilder官方配置进行替换
+
+
+
 ## Git需要忽略的文件
 ```
 .hbuilderx/HBuilderConfigTemp.json

@@ -1,8 +1,9 @@
 const path = require("path");
 const workDir = process.cwd();
 
-// console.log("HBuilder", process.env.HBuilder);
+console.log("工作路径：", workDir);
 
+exports.workDir = workDir;
 exports.port = 10020;
 // 配置文件
 exports.ConfigFileName = path.join(workDir, "HBuilderConfig.json");
@@ -22,4 +23,3 @@ exports.HBuilderAdb = path.join(
   "plugins/launcher/tools/adbs/adb"
 );
 exports.HBuilderCli = path.join(process.env.HBuilder || "", "cli");
-// console.log("HBuilderCli", path.join(process.env.HBuilder || "", "cli"));

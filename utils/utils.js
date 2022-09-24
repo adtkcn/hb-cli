@@ -8,7 +8,6 @@ var iconv = require("iconv-lite");
 const config = require("../config/config.js");
 
 var workDir = process.cwd();
-console.log("workDir", workDir);
 
 function OpenWifiDebug() {
   return new Promise(async (resolve, reject) => {
@@ -128,7 +127,9 @@ function getLocalIP() {
  * @param {string} url
  */
 function openDefaultBrowser(url) {
-  // console.log(process.platform);
+  console.log("预览地址：", url);
+  console.log("使用 ctrl+c 关闭终端");
+
   switch (process.platform) {
     case "darwin":
       cp.exec("open " + url);
@@ -154,7 +155,6 @@ function readConfig(FileName) {
       var d = String(data);
       try {
         var c = JSON5.parse(d);
-        // console.log("readConfig", c);
         resolve(c);
       } catch (error) {
         console.log(error);
@@ -222,9 +222,13 @@ function MergeManifestConfig(ManifestConfig = {}, info = {}) {
  * @param { CallbackHandler } callback
  */
 function buildAppCli(HBuilderConfigFileTemp, callback) {
-  // D:\办公\HBuilderX\cli pack --config e:\icpc_workspace_2\shougang\APP\zdhlAliyunApp\HBuilderConfig.json
   console.log(config.HBuilderCli, ["pack", "--config", HBuilderConfigFileTemp]);
 
+  // callback(
+  //   -2,
+  //   "22:26:53.895 类型: iOS Appstore 下载地址: https://ide.dcloud.net.cn/build/download/cb70a350-3c14-11ed-86a7-e7f71704f918 "
+  // );
+  // return;
   var pack = cp.spawn(config.HBuilderCli, [
     "pack",
     "--config",
@@ -241,30 +245,38 @@ function buildAppCli(HBuilderConfigFileTemp, callback) {
   });
 
   pack.on("exit", function (code) {
-    console.log("buildApp code " + code);
     callback && callback(code);
   });
 }
+function GetUrl(str) {
+  const reg =
+    /(https?|http|ftp|file):\/\/[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]/g;
+  const strValue = str.match(reg);
+  if (strValue && strValue.length > 0) {
+    return strValue[0];
+  }
+  return null;
+}
+
 function buildApp() {
   return new Promise(async (resolve, reject) => {
     try {
       var OpenHBuilderCode = await OpenHBuilder();
       if (OpenHBuilderCode !== 0) {
-        console.log(OpenHBuilderCode);
-        reject(OpenHBuilderCode);
+        reject("打开HBuilder编辑器失败");
         return;
       }
 
       buildAppCli(config.ConfigFileTemp, function (code, data) {
         // code==-1 自定义错误code,-2是正常数据,-3是错误数据, 其他是进程code
-
-        if (code == -1 && data) {
+        if (code == 0) {
+        } else if (code == -1 && data) {
           //自定义异常
           console.log(data);
           reject(-1, data);
         } else if (code == -2 && data) {
           //进程正常返回数据
-          console.log(data); // 追加一行
+          console.log(data);
 
           if (
             data.indexOf("打包成功") != -1 &&
@@ -274,25 +286,30 @@ function buildApp() {
             var appPath = data.split("安装包位置：")[1];
 
             if (!appPath) {
-              console.log("打包的路径获取出错"); // 输出日志
-              reject(-3, "打包的路径获取出错");
+              reject("打包的路径获取出错");
               return;
             }
             var newAppPath = appPath
               .replace(/\//g, "\\")
               .replace(/\n/g, "")
               .replace(/(\s*$)/g, "");
-
-            var link = encodeURIComponent(newAppPath);
-            var url = `http://${getLocalIP()}:${config.port}?link=${link}`;
-            console.log("地址：", url);
-            console.log("使用 ctrl+c 关闭终端");
-            openDefaultBrowser(url);
+            // var link = encodeURIComponent(newAppPath);
+            // var url = `http://${getLocalIP()}:${config.port}?link=${link}`;
+            // openDefaultBrowser(url);
+            resolve(newAppPath);
+          }
+          if (data.indexOf("iOS Appstore 下载地址:") != -1) {
+            // ios下载地址
+            var appUrl = GetUrl(data);
+            if (appUrl) {
+              // 下载文件
+              resolve(appUrl);
+            }
           }
         } else if (code == -3 && data) {
           //进程异常返回数据
           console.log(data); // 追加一行
-          reject(-3);
+          reject(data);
         }
       });
     } catch (error) {
@@ -311,4 +328,5 @@ module.exports = {
   OpenHBuilder,
   OpenWifiDebug,
   ConnectPhoneWithWifi,
+  GetUrl,
 };

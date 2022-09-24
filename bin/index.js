@@ -6,6 +6,8 @@ const utils = require("../utils/utils.js");
 const merge = require("../utils/merge.js");
 const gen = require("../utils/gen.js");
 
+const file = require("../utils/file.js");
+
 const config = require("../config/config.js");
 
 const server = require("../server/server.js");
@@ -18,10 +20,8 @@ async function main() {
     });
   let ipList = [];
   try {
-    console.log("IpFile", config.IpFile);
     ipList = await utils.readConfig(config.IpFile);
   } catch (error) {
-    // console.log("ipList", error);
     ipList = [];
   }
 
@@ -89,16 +89,12 @@ async function main() {
         when: function (answers) {
           return answers.function == "改版本号" || answers.function == "打包";
         },
-        filter: (val) => {
-          //将选择的内容后面加内容
-          return val;
-        },
       },
       {
         type: "list",
         message: `环境变量`,
         name: "env",
-        choices: envOptions, // 有中断情况，所有拆成两步
+        choices: envOptions,
         when: function (answers) {
           return (
             envOptions.length &&
@@ -110,7 +106,7 @@ async function main() {
         type: "list",
         message: `安卓Wifi调试`,
         name: "wifi",
-        choices: ["打开手机调试并连接", "连接到手机"], // 有中断情况，所有拆成两步
+        choices: ["打开手机调试并连接", "连接到手机"],
         when: function (answers) {
           return answers.function == "Wifi调试";
         },
@@ -119,7 +115,7 @@ async function main() {
         type: "list",
         message: `选择手机IP`,
         name: "selectPhoneIP",
-        choices: ["自定义IP", ...ipList], // 有中断情况，所有拆成两步
+        choices: ["自定义IP", ...ipList],
         when: function (answers) {
           return answers.function == "Wifi调试";
         },
@@ -129,7 +125,6 @@ async function main() {
         name: "inputPhoneIP", // 字段名称，在then里可以打印出来
         message: "输入手机IP", // 提示信息
         validate: function (v) {
-          // 校验：当输入的值为是string类型，才能按回车，否则按了回车并无效果
           return v.split(".").length == 4;
         },
         when: function (answers) {
@@ -173,33 +168,56 @@ async function main() {
         manifest.versionName = answers.updateVersion;
         manifest.versionCode = newVersionCode;
         let ManifestConfig = utils.MergeManifestConfig(manifest);
-        // console.log(ManifestConfig);
+
         await utils.WriteConfig("manifest.json", ManifestConfig);
       }
       if (answers.function == "打包") {
         // 是否打包
-        if (HBuilderConfig.hb_cli) {
-          //删除自定义数据部分
-          delete HBuilderConfig.hb_cli;
-        }
+
         let hbuilderconfig = utils.MergeHBuilderConfig(HBuilderConfig, {
           iscustom: answers.iscustom,
           platform: answers.platform,
         });
-
-        // console.log(hbuilderconfig);
+        if (hbuilderconfig.hb_cli) {
+          //删除自定义数据部分
+          delete hbuilderconfig.hb_cli;
+        }
         await utils.WriteConfig(config.ConfigFileTemp, hbuilderconfig);
         server.init();
-
-        await utils
-          .buildApp()
-          .catch(function (err) {
-            console.log(err);
+        // appFileUrl是本地文件路径时，是安卓，https开头是ios在线地址
+        var appFileUrl = await utils.buildApp().catch(function (err) {
+          console.log(err);
+          server.exit();
+        });
+        if (appFileUrl && appFileUrl.indexOf("https") == 0) {
+          try {
+            appFileUrl = await file.downloadFile(
+              appFileUrl,
+              config.workDir + "/" + "unpackage/release/ipa",
+              HBuilderConfig.project + "-" + dayjs().format("MMDDHHmm") + ".ipa"
+            );
+          } catch (error) {
+            appFileUrl = "";
             server.exit();
-          })
-          .then((res) => {
-            console.log(res);
-          });
+          }
+        }
+
+        if (HBuilderConfig?.hb_cli?.uploadUrl && appFileUrl) {
+          await file.upload(HBuilderConfig?.hb_cli?.uploadUrl, appFileUrl);
+        }
+        if (appFileUrl) {
+          var newAppPath = appFileUrl
+            .replace(/\//g, "\\")
+            .replace(/\n/g, "")
+            .replace(/(\s*$)/g, "");
+          console.log("本地目录：", newAppPath);
+
+          var url = `http://${utils.getLocalIP()}:${
+            config.port
+          }?link=${encodeURIComponent(newAppPath)}`;
+
+          utils.openDefaultBrowser(url);
+        }
       }
       var ip = "";
       if (answers.inputPhoneIP) {
