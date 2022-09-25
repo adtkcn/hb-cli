@@ -18,34 +18,37 @@ async function upload(uploadUrl, fileUrl) {
   //     err ? reject(err) : resolve(length)
   //   );
   // });
-
-  axios({
-    url: uploadUrl,
-    method: "POST",
-    data: formData,
-    // headers: formData.getHeaders(),
-    maxContentLength: `Infinity`,
-    maxBodyLength: `Infinity`,
-    onUploadProgress(progressEvent) {
-      //   console.log("progressEvent", progressEvent);
-      if (progressEvent.lengthComputable) {
-        //属性lengthComputable主要表明总共需要完成的工作量和已经完成的工作是否可以被测量
-        //如果lengthComputable为false，就获取不到progressEvent.total和progressEvent.loaded
-        upLoadProgress = (progressEvent.loaded / progressEvent.total) * 100; //实时获取上传进度
-        console.log(
-          upLoadProgress + "%",
-          progressEvent.loaded,
-          progressEvent.total
-        );
-      }
-    },
-  })
-    .then((res) => {
-      console.log("上传文件返回", res.data);
+  return new Promise((resolve, reject) => {
+    axios({
+      url: uploadUrl,
+      method: "POST",
+      data: formData,
+      // headers: formData.getHeaders(),
+      maxContentLength: `Infinity`,
+      maxBodyLength: `Infinity`,
+      onUploadProgress(progressEvent) {
+        //   console.log("progressEvent", progressEvent);
+        if (progressEvent.lengthComputable) {
+          //属性lengthComputable主要表明总共需要完成的工作量和已经完成的工作是否可以被测量
+          //如果lengthComputable为false，就获取不到progressEvent.total和progressEvent.loaded
+          upLoadProgress = (progressEvent.loaded / progressEvent.total) * 100; //实时获取上传进度
+          console.log(
+            upLoadProgress + "%",
+            progressEvent.loaded,
+            progressEvent.total
+          );
+        }
+      },
     })
-    .catch((err) => {
-      console.log("上传文件失败", err.message);
-    });
+      .then((res) => {
+        console.log("上传文件返回", res.data);
+        resolve();
+      })
+      .catch((err) => {
+        console.log("上传文件失败", err.message);
+        reject(err);
+      });
+  });
 }
 // url 是图片地址
 // filepath 是文件下载的本地目录

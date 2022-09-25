@@ -18,6 +18,7 @@ export default HBuilderEnv;
     `;
 }
 function generateCode(obj) {
+  console.log("生成文件：", config.genEnvConfigFile);
   utils.WriteConfig(config.genEnvConfigFile, gencode(obj));
 }
 module.exports = {

@@ -70,21 +70,21 @@ function OpenHBuilder() {
         reject(1);
         return;
       }
-      console.log("OpenHBuilder", config.HBuilderCli);
       var ls = cp.spawn(config.HBuilderCli, ["open"], {});
       ls.on("exit", function (code) {
-        console.log("openHBuilder 状态： " + code);
         if (code === 0) {
+          console.log("打开编辑器 状态： 成功" + code);
           // 给hbuilder加载时间
           setTimeout(() => {
             resolve(0);
           }, 4000);
         } else {
+          console.log("打开编辑器 状态： 失败" + code);
           reject(code);
         }
       });
     } catch (error) {
-      console.log("OpenHBuilder", error);
+      console.log("打开编辑器 错误", error);
       reject(1);
     }
   });
@@ -266,10 +266,12 @@ function buildApp() {
         reject("打开HBuilder编辑器失败");
         return;
       }
-
+      var apps = [];
       buildAppCli(config.ConfigFileTemp, function (code, data) {
         // code==-1 自定义错误code,-2是正常数据,-3是错误数据, 其他是进程code
         if (code == 0) {
+          console.log("安装包", apps);
+          resolve(apps);
         } else if (code == -1 && data) {
           //自定义异常
           console.log(data);
@@ -296,14 +298,14 @@ function buildApp() {
             // var link = encodeURIComponent(newAppPath);
             // var url = `http://${getLocalIP()}:${config.port}?link=${link}`;
             // openDefaultBrowser(url);
-            resolve(newAppPath);
+            apps.push(newAppPath);
           }
           if (data.indexOf("iOS Appstore 下载地址:") != -1) {
             // ios下载地址
             var appUrl = GetUrl(data);
             if (appUrl) {
               // 下载文件
-              resolve(appUrl);
+              apps.push(appUrl);
             }
           }
         } else if (code == -3 && data) {
@@ -314,6 +316,7 @@ function buildApp() {
       });
     } catch (error) {
       console.log("error", error);
+      reject(error);
     }
   });
 }

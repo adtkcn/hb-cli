@@ -18,18 +18,17 @@ async function main() {
     .catch(function (err) {
       console.log(err);
     });
+  let manifest = await utils
+    .readConfig(config.manifestFileName)
+    .catch(function (err) {
+      console.log(err);
+    });
   let ipList = [];
   try {
     ipList = await utils.readConfig(config.IpFile);
   } catch (error) {
     ipList = [];
   }
-
-  let manifest = await utils
-    .readConfig(config.manifestFileName)
-    .catch(function (err) {
-      console.log(err);
-    });
 
   if (!HBuilderConfig || !manifest) {
     return;
@@ -136,7 +135,7 @@ async function main() {
       },
     ])
     .then(async function (answers) {
-      console.log("answers", answers);
+      // console.log("answers", answers);
       if (answers.function == "环境变量" && envOptions.length == 0) {
         console.log(
           "环境变量：请在HBuilderConfig.json文件中定义hb_cli.env对象"
@@ -171,6 +170,29 @@ async function main() {
 
         await utils.WriteConfig("manifest.json", ManifestConfig);
       }
+
+      var ip = "";
+      if (answers.inputPhoneIP) {
+        ip = answers.inputPhoneIP;
+      } else if (answers.selectPhoneIP && answers.selectPhoneIP != "自定义IP") {
+        ip = answers.selectPhoneIP;
+      }
+
+      if (ip && !ipList.includes(ip)) {
+        console.log("写入IP文件：", config.IpFile);
+        utils.WriteConfig(config.IpFile, JSON.stringify([...ipList, ip]));
+      }
+
+      if (answers.wifi == "打开手机调试并连接") {
+        let wifiStatus = await utils.OpenWifiDebug();
+        if (wifiStatus == 0) {
+          await utils.ConnectPhoneWithWifi(ip);
+        }
+      }
+      if (answers.wifi == "连接到手机") {
+        await utils.ConnectPhoneWithWifi(ip);
+      }
+
       if (answers.function == "打包") {
         // 是否打包
 
@@ -185,59 +207,34 @@ async function main() {
         await utils.WriteConfig(config.ConfigFileTemp, hbuilderconfig);
         server.init();
         // appFileUrl是本地文件路径时，是安卓，https开头是ios在线地址
-        var appFileUrl = await utils.buildApp().catch(function (err) {
-          console.log(err);
-          server.exit();
-        });
-        if (appFileUrl && appFileUrl.indexOf("https") == 0) {
-          try {
-            appFileUrl = await file.downloadFile(
-              appFileUrl,
+        var apps = await utils.buildApp();
+
+        apps.map(async (appUrl) => {
+          if (appUrl && appUrl.indexOf("https") == 0) {
+            appUrl = await file.downloadFile(
+              appUrl,
               config.workDir + "/" + "unpackage/release/ipa",
-              HBuilderConfig.project + "-" + dayjs().format("MMDDHHmm") + ".ipa"
+              manifest.name + "_" + dayjs().format("YYYYMMDDHHmm") + ".ipa"
             );
-          } catch (error) {
-            appFileUrl = "";
-            server.exit();
+          } else if (appUrl) {
+            // 安卓才打开浏览器，ios直接打开没用，所有暂时不打卡
+
+            var url = `http://${utils.getLocalIP()}:${
+              config.port
+            }?link=${encodeURIComponent(appUrl)}`;
+
+            utils.openDefaultBrowser(url);
           }
-        }
+          console.log("本地目录：", appUrl);
 
-        if (HBuilderConfig?.hb_cli?.uploadUrl && appFileUrl) {
-          await file.upload(HBuilderConfig?.hb_cli?.uploadUrl, appFileUrl);
-        }
-        if (appFileUrl) {
-          var newAppPath = appFileUrl
-            .replace(/\//g, "\\")
-            .replace(/\n/g, "")
-            .replace(/(\s*$)/g, "");
-          console.log("本地目录：", newAppPath);
-
-          var url = `http://${utils.getLocalIP()}:${
-            config.port
-          }?link=${encodeURIComponent(newAppPath)}`;
-
-          utils.openDefaultBrowser(url);
-        }
-      }
-      var ip = "";
-      if (answers.inputPhoneIP) {
-        ip = answers.inputPhoneIP;
-      } else if (answers.selectPhoneIP && answers.selectPhoneIP != "自定义IP") {
-        ip = answers.selectPhoneIP;
-      }
-
-      if (ip && !ipList.includes(ip)) {
-        utils.WriteConfig(config.IpFile, JSON.stringify([...ipList, ip]));
-      }
-
-      if (answers.wifi == "打开手机调试并连接") {
-        let wifiStatus = await utils.OpenWifiDebug();
-        if (wifiStatus == 0) {
-          await utils.ConnectPhoneWithWifi(ip);
-        }
-      }
-      if (answers.wifi == "连接到手机") {
-        await utils.ConnectPhoneWithWifi(ip);
+          if (HBuilderConfig?.hb_cli?.uploadUrl && appUrl) {
+            await file
+              .upload(HBuilderConfig?.hb_cli?.uploadUrl, appUrl)
+              .catch((err) => {
+                // console.log("上传",err);
+              });
+          }
+        });
       }
     })
     .catch(function (err) {
