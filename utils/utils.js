@@ -222,7 +222,10 @@ function MergeManifestConfig(ManifestConfig = {}, info = {}) {
  * @param { CallbackHandler } callback
  */
 function buildAppCli(HBuilderConfigFileTemp, callback) {
-  console.log(config.HBuilderCli, ["pack", "--config", HBuilderConfigFileTemp]);
+  console.log(
+    config.HBuilderCli,
+    ["pack", "--config", HBuilderConfigFileTemp].join(" ")
+  );
 
   // callback(
   //   -2,
@@ -270,7 +273,12 @@ function buildApp() {
       buildAppCli(config.ConfigFileTemp, function (code, data) {
         // code==-1 自定义错误code,-2是正常数据,-3是错误数据, 其他是进程code
         if (code == 0) {
-          console.log("安装包", apps);
+          if (apps.length) {
+            console.log("安装包", apps);
+          } else {
+            console.log("未获取到安装包");
+          }
+
           resolve(apps);
         } else if (code == -1 && data) {
           //自定义异常
@@ -295,9 +303,7 @@ function buildApp() {
               .replace(/\//g, "\\")
               .replace(/\n/g, "")
               .replace(/(\s*$)/g, "");
-            // var link = encodeURIComponent(newAppPath);
-            // var url = `http://${getLocalIP()}:${config.port}?link=${link}`;
-            // openDefaultBrowser(url);
+
             apps.push(newAppPath);
           }
           if (data.indexOf("iOS Appstore 下载地址:") != -1) {

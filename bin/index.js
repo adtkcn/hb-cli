@@ -34,8 +34,12 @@ async function main() {
     return;
   }
   let envOptions = [];
-  if (HBuilderConfig.hb_cli && HBuilderConfig.hb_cli.env) {
+  if (HBuilderConfig?.hb_cli?.env) {
     envOptions = Object.keys(HBuilderConfig.hb_cli.env);
+  }
+  let configOptions = [];
+  if (HBuilderConfig?.hb_cli?.HBuilderConfig) {
+    configOptions = Object.keys(HBuilderConfig.hb_cli.HBuilderConfig);
   }
 
   let newVersionCode = parseInt(manifest.versionCode) + 1;
@@ -103,6 +107,15 @@ async function main() {
       },
       {
         type: "list",
+        message: `更改配置`,
+        name: "config",
+        choices: configOptions,
+        when: function (answers) {
+          return configOptions.length && answers.function == "打包";
+        },
+      },
+      {
+        type: "list",
         message: `安卓Wifi调试`,
         name: "wifi",
         choices: ["打开手机调试并连接", "连接到手机"],
@@ -147,19 +160,21 @@ async function main() {
           HBuilderConfig.hb_cli.env["base"],
           HBuilderConfig.hb_cli.env[answers.env]
         );
-        let newHBuilderConfig = {};
-        if (env.HBuilderConfig) {
-          newHBuilderConfig = merge.deepAssign({}, env.HBuilderConfig);
-          delete env.HBuilderConfig;
-        }
         gen.generateCode(env);
-
+      }
+      if (answers.config) {
+        let newHBuilderConfig = merge.deepAssign(
+          {},
+          HBuilderConfig.hb_cli.HBuilderConfig["base"],
+          HBuilderConfig.hb_cli.HBuilderConfig[answers.config]
+        );
         HBuilderConfig = merge.deepAssign(
           {},
           HBuilderConfig,
           newHBuilderConfig
         );
       }
+
       if (
         (answers.function == "改版本号" || answers.function == "打包") &&
         answers.updateVersion != "不更改版本"
