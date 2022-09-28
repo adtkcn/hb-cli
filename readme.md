@@ -6,11 +6,14 @@ npm i -g @adtkcn/hb-cli
 # 功能
 1. 简化打包安卓/ios App
 2. 切换环境变量，根据配置中`hb_cli.env.*`生成js文件
-3. 切换不同配置参数，根据配置中`hb_cli.env.*.HBuilderConfig`生成不同的配置文件
+3. 切换不同配置参数，根据配置中`hb_cli.HBuilderConfig.*`生成不同的配置文件
 4. 更改版本号
 5. wifi调试
 6. 自动下载ios包到本地
 7. 自动上传安装包到`hb_cli.env.upload.url`指定的地址
+
+## 更新日志
+[change.md](./change.md)
 
 # 运行
 
@@ -27,7 +30,7 @@ hb-cli
 
 https://hx.dcloud.net.cn/cli/pack?id=config
 
-<!-- 除了"hb-cli"都是官方配置 -->
+除了`hb_cli`都是官方配置
 
 ```json5
 {
@@ -86,27 +89,26 @@ https://hx.dcloud.net.cn/cli/pack?id=config
       "url": "http://127.0.0.1:1080/api/file/upload",
       "formData": {} //上传附加内容，不要包含file字段,因为文件是file
     },
+    "HBuilderConfig": { // 修改打包的配置项
+      "base": {
+        "project": "消息订阅2",
+      },
+      "prod": {//会合并base
+        "project": "消息订阅3",
+        "android": {
+          "packagename": "cn.adtk.prod"
+        }
+      }
+    },
     "env":{
       "base": {
         // 基础,其他任意选项会合并base变量
         // HBuilderConfig 属性，可定义上方除hb_cli的所有属性，以实现切换证书之类的操作
         // 除HBuilderConfig 属性外，都会输出到HBuilderEnv.js 文件，实现app内切换环境变量
-        "url": "https://base.a.cn",
-        "HBuilderConfig": {
-          "exchange": true,
-          "android": {
-            "packagename": "cn.a.base"
-          }
-        }
+        "url": "https://base.a.cn"
       },
       "prod": { //会合并base
-        "url": "https://prod.a.cn",
-        "HBuilderConfig": {
-          "exchange": false,
-          "android": {
-            "packagename": "cn.a.prod"
-          }
-        }
+        "url": "https://prod.a.cn"
       },
     }
   },
@@ -114,14 +116,15 @@ https://hx.dcloud.net.cn/cli/pack?id=config
 ```
 ## 配置文件说明
 
-`hb_cli`目录是本插件自定义属性，可忽略，其他都是hbuilder官方配置
+`hb_cli` 目录是本插件自定义属性，可忽略，其他都是hbuilder官方配置
 
 `hb_cli.upload.url` 上传接口路径： 如果配置，将会自动上传
+
 `hb_cli.upload.formData` 上传接口附带内容formData
  
 `hb_cli.env` 环境变量，执行hb-cli命令时选择`环境变量`,将会选择对应的key，选择任意key都会合并base对象，生成HBuilderEnv.js文件
 
-`hb_cli.env.*.HBuilderConfig` 会对hbuilder官方配置进行替换
+`hb_cli.HBuilderConfig` 对hbuilder官方配置项进行替换，实现多配置
 
 
 
