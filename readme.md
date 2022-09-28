@@ -10,7 +10,7 @@ npm i -g @adtkcn/hb-cli
 4. 更改版本号
 5. wifi调试
 6. 自动下载ios包到本地
-7. 自动上传安装包到`hb_cli.env.uploadUrl`指定地址
+7. 自动上传安装包到`hb_cli.env.upload.url`指定的地址
 
 # 运行
 
@@ -82,7 +82,10 @@ https://hx.dcloud.net.cn/cli/pack?id=config
   "exchange": false,
 
   "hb_cli": {
-    "uploadUrl": "http://127.0.0.1:1080/api/file/upload",// 如果配置，将会自动上传
+    "upload": {
+      "url": "http://127.0.0.1:1080/api/file/upload",
+      "formData": {} //上传附加内容，不要包含file字段,因为文件是file
+    },
     "env":{
       "base": {
         // 基础,其他任意选项会合并base变量
@@ -113,7 +116,8 @@ https://hx.dcloud.net.cn/cli/pack?id=config
 
 `hb_cli`目录是本插件自定义属性，可忽略，其他都是hbuilder官方配置
 
-`hb_cli.uploadUrl` 上传接口路径： 如果配置，将会自动上传
+`hb_cli.upload.url` 上传接口路径： 如果配置，将会自动上传
+`hb_cli.upload.formData` 上传接口附带内容formData
  
 `hb_cli.env` 环境变量，执行hb-cli命令时选择`环境变量`,将会选择对应的key，选择任意key都会合并base对象，生成HBuilderEnv.js文件
 

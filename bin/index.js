@@ -227,9 +227,13 @@ async function main() {
           }
           console.log("本地目录：", appUrl);
 
-          if (HBuilderConfig?.hb_cli?.uploadUrl && appUrl) {
+          if (HBuilderConfig?.hb_cli?.upload?.url && appUrl) {
             await file
-              .upload(HBuilderConfig?.hb_cli?.uploadUrl, appUrl)
+              .upload(
+                HBuilderConfig?.hb_cli?.upload?.url,
+                appUrl,
+                HBuilderConfig?.hb_cli?.upload?.formData
+              )
               .catch((err) => {
                 // console.log("上传",err);
               });

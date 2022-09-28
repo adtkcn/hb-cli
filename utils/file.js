@@ -3,15 +3,26 @@ const FormData = require("form-data");
 const fs = require("fs");
 const path = require("path");
 const dayjs = require("dayjs");
+
 /**
  * 上传文件
  * @param {*} uploadUrl 上传路径
  * @param {*} fileUrl 文件路径
+ * @param {*} data post的数据
  */
-async function upload(uploadUrl, fileUrl) {
+async function upload(uploadUrl, fileUrl, data) {
   console.log("准备上传文件");
   let formData = new FormData();
   let fileData = fs.createReadStream(fileUrl); // 根目录下需要有一个test.jpg文件
+
+  if (data && typeof data == "object") {
+    for (const key in data) {
+      if (Object.hasOwnProperty.call(data, key)) {
+        const val = data[key];
+        formData.append(key, val);
+      }
+    }
+  }
   formData.append("file", fileData);
   // let len = await new Promise((resolve, reject) => {
   //   return formData.getLength((err, length) =>
