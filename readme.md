@@ -10,7 +10,7 @@ npm i -g @adtkcn/hb-cli
 4. 更改版本号
 5. wifi调试
 6. 自动下载ios包到本地
-7. 自动上传安装包到`hb_cli.env.upload.url`指定的地址
+7. 自动上传安装包到`hb_cli.upload.url`指定的地址
 
 ## 更新日志
 [change.md](./change.md)
@@ -86,7 +86,7 @@ https://hx.dcloud.net.cn/cli/pack?id=config
 
   "hb_cli": {
     "upload": {
-      "url": "http://127.0.0.1:1080/api/file/upload",
+      "url": "http://127.0.0.1/upload",// 自定义上传地址，可以是蒲公英之类的
       "formData": {} //上传附加内容，不要包含file字段,因为文件是file
     },
     "HBuilderConfig": { // 修改打包的配置项
