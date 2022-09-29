@@ -61,7 +61,7 @@ https://hx.dcloud.net.cn/cli/pack?id=config
   //ios打包参数
   "ios": {
     //ios appid
-    "bundle": "uni.UNID8AA064",
+    "bundle": "",
     //ios打包支持的设备类型 默认值iPhone 值有"iPhone","iPad" 如果要打多个逗号隔开打包平台
     "supporteddevice": "iPhone,iPad",
     //iOS打包是否打越狱包,只有值为true时打越狱包,false打正式包
