@@ -107,7 +107,7 @@ async function main() {
       },
       {
         type: "list",
-        message: `更改配置`,
+        message: `更换配置`,
         name: "config",
         choices: configOptions,
         when: function (answers) {

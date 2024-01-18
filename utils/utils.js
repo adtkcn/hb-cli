@@ -294,7 +294,7 @@ function buildApp() {
           ) {
             // 打包成功    安装包位置：E:/xiangheng/通知订阅/消息订阅/unpackage/release/apk/__UNI__ECA51B4__20220426171608.apk
             var appPath = data.split("安装包位置：")[1];
-
+            appPath=appPath.split(" ")[0]
             if (!appPath) {
               reject("打包的路径获取出错");
               return;
