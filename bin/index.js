@@ -220,10 +220,15 @@ async function main() {
           delete hbuilderconfig.hb_cli;
         }
         await utils.WriteConfig(config.ConfigFileTemp, hbuilderconfig);
-        server.init();
-        // appFileUrl是本地文件路径时，是安卓，https开头是ios在线地址
-        var apps = await utils.buildApp();
+   
 
+     
+        // appFileUrl是本地文件路径时，是安卓，https开头是ios在线地址
+        var apps = await utils.buildApp(answers.iscustom);
+        if(apps.length&&answers.iscustom===false&&["android","android,ios"].includes(answers.platform)){
+          //正式版并且是安卓才启动文件服务
+          server.init();
+        }
         apps.map(async (appUrl) => {
           if (appUrl && appUrl.indexOf("https") == 0) {
             appUrl = await file.downloadFile(
@@ -232,7 +237,7 @@ async function main() {
               manifest.name + "_" + dayjs().format("YYYYMMDDHHmm") + ".ipa"
             );
           } else if (appUrl) {
-            // 安卓才打开浏览器，ios直接打开没用，所有暂时不打卡
+            // 安卓才打开浏览器，ios直接打开没用，所有暂时不打开
 
             var url = `http://${utils.getLocalIP()}:${
               config.port

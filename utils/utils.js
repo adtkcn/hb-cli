@@ -261,7 +261,13 @@ function GetUrl(str) {
   return null;
 }
 
-function buildApp() {
+/**
+ *
+ * @param {*} iscustom 是不是自定义基座
+ * @returns
+ */
+
+function buildApp(iscustom) {
   return new Promise(async (resolve, reject) => {
     try {
       var OpenHBuilderCode = await OpenHBuilder();
@@ -273,10 +279,12 @@ function buildApp() {
       buildAppCli(config.ConfigFileTemp, function (code, data) {
         // code==-1 自定义错误code,-2是正常数据,-3是错误数据, 其他是进程code
         if (code == 0) {
-          if (apps.length) {
-            console.log("安装包", apps);
-          } else {
-            console.log("未获取到安装包");
+          if (iscustom === false) {
+            if (apps.length) {
+              console.log("安装包", apps);
+            } else {
+              console.log("未获取到安装包");
+            }
           }
 
           resolve(apps);
@@ -294,7 +302,7 @@ function buildApp() {
           ) {
             // 打包成功    安装包位置：E:/xiangheng/通知订阅/消息订阅/unpackage/release/apk/__UNI__ECA51B4__20220426171608.apk
             var appPath = data.split("安装包位置：")[1];
-            appPath=appPath.split(" ")[0]
+            appPath = appPath.split(" ")[0];
             if (!appPath) {
               reject("打包的路径获取出错");
               return;
