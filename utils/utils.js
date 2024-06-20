@@ -9,8 +9,11 @@ const config = require("../config/config.js");
 
 var workDir = process.cwd();
 
+/**
+ * 打开wifi调试
+ */
 function OpenWifiDebug() {
-  return new Promise(async (resolve, reject) => {
+  return new Promise((resolve, reject) => {
     try {
       var ls = cp.spawn(config.HBuilderAdb, ["tcpip", "5555"], {});
       ls.on("exit", function (code) {
@@ -31,8 +34,13 @@ function OpenWifiDebug() {
     }
   });
 }
+/**
+ * 连接到wifi
+ * @param {string} ip
+ * @returns
+ */
 function ConnectPhoneWithWifi(ip) {
-  return new Promise(async (resolve, reject) => {
+  return new Promise((resolve, reject) => {
     try {
       var ls = cp.spawn(config.HBuilderAdb, ["connect", ip], {});
       ls.on("exit", function (code) {
@@ -56,20 +64,11 @@ function ConnectPhoneWithWifi(ip) {
 
 /**
  * 打开HBuilder编辑器
- * @returns
+ * @returns {Promise<Number>} 状态码：0成功
  */
 function OpenHBuilder() {
-  return new Promise(async (resolve, reject) => {
+  return new Promise((resolve, reject) => {
     try {
-      var HBuilderConfig = await readConfig(config.ConfigFileName).catch(
-        function (err) {
-          console.log(err);
-        }
-      );
-      if (!HBuilderConfig) {
-        reject(1);
-        return;
-      }
       var ls = cp.spawn(config.HBuilderCli, ["open"], {});
       ls.on("exit", function (code) {
         if (code === 0) {
@@ -93,7 +92,7 @@ function OpenHBuilder() {
 /**
  * 获取本机ip
  *
- * @return {string}
+ * @return {string} 局域网ip地址
  */
 function getLocalIP() {
   const osType = os.type(); //系统类型
@@ -144,6 +143,8 @@ function openDefaultBrowser(url) {
 
 /**
  * 读取工作目录配置文件
+ * @param {string} FileName
+ * @returns {Promise<object>}
  */
 function readConfig(FileName) {
   return new Promise((resolve, reject) => {
@@ -165,11 +166,11 @@ function readConfig(FileName) {
 }
 /**
  * 更改配置文件
- * @param {*} ConfigFilePath
- * @param {*} Config
- * @returns
+ * @param {string} ConfigFilePath
+ * @param {string} Config
+ * @returns {Promise<string>}
  */
-function WriteConfig(ConfigFilePath, str = "") {
+function WriteConfig(ConfigFilePath, Config = "") {
   return new Promise((resolve, reject) => {
     fs.mkdir(
       path.dirname(ConfigFilePath),
@@ -181,7 +182,7 @@ function WriteConfig(ConfigFilePath, str = "") {
           console.log(err);
           return reject(err);
         }
-        fs.writeFileSync(ConfigFilePath, str);
+        fs.writeFileSync(ConfigFilePath, Config);
         resolve(ConfigFilePath);
       }
     );
@@ -215,28 +216,20 @@ function MergeManifestConfig(ManifestConfig = {}, info = {}) {
 }
 
 /**
- *打包app
- *
- * @param {*} rootPath 项目路径
- * @param { string } HBuilderConfigFileTemp 临时配置文件路径
- * @param { CallbackHandler } callback
+ * 运行cli
+ * @param {Array} cli
+ * @param {Function} callback
  */
-function buildAppCli(HBuilderConfigFileTemp, callback) {
-  console.log(
-    config.HBuilderCli,
-    ["pack", "--config", HBuilderConfigFileTemp].join(" ")
-  );
+function RunCli(cli, callback) {
+  console.log(config.HBuilderCli, cli.join(" "));
 
-  // callback(
-  //   -2,
-  //   "22:26:53.895 类型: iOS Appstore 下载地址: https://ide.dcloud.net.cn/build/download/cb70a350-3c14-11ed-86a7-e7f71704f918 "
-  // );
-  // return;
-  var pack = cp.spawn(config.HBuilderCli, [
-    "pack",
-    "--config",
-    HBuilderConfigFileTemp,
-  ]);
+  // var pack = cp.spawn(config.HBuilderCli, [
+  //   "pack",
+  //   "--config",
+  //   HBuilderConfigFileTemp,
+  // ]);
+  var pack = cp.spawn(config.HBuilderCli, cli);
+
   pack.stdout.on("data", (data) => {
     var str = iconv.decode(Buffer.from(data, "binary"), "GBK");
     callback && callback(-2, str);
@@ -251,6 +244,104 @@ function buildAppCli(HBuilderConfigFileTemp, callback) {
     callback && callback(code);
   });
 }
+
+/**
+ * 导出wgt包
+ * @param {object} HBuilderConfig
+ * @returns {Promise<Array>}
+ */
+function buildWgtCli(HBuilderConfig) {
+  return new Promise((resolve, reject) => {
+    var apps = [];
+    RunCli(
+      [
+        "publish",
+        "--platform",
+        "APP",
+        "--type",
+        "wgt",
+        "--project",
+        HBuilderConfig.project,
+        "--name",
+        `${HBuilderConfig.project}.wgt`,
+      ],
+      function (code, data) {
+        if (code == 0) {
+          resolve(apps);
+        } else if (code == -1 && data) {
+          //自定义异常
+          console.log(data);
+          reject(-1, data);
+        } else if (code == -2 && data) {
+          //进程正常返回数据
+          console.log(data);
+
+          if (data.indexOf(`导出成功，路径为：`) != -1) {
+            var appPath = data.split("导出成功，路径为：")[1];
+
+            if (!appPath) {
+              reject("打包的路径获取出错");
+              return;
+            }
+            apps.push(appPath);
+          }
+        } else if (code == -3 && data) {
+          //进程异常返回数据
+          console.log(data); // 追加一行
+          reject(data);
+        }
+      }
+    );
+  });
+}
+/**
+ * 导出appResource
+ * @param {object} HBuilderConfig
+ * @returns {Promise<Array>}
+ */
+function buildAppResourceCli(HBuilderConfig) {
+  return new Promise((resolve, reject) => {
+    var apps = [];
+    RunCli(
+      [
+        "publish",
+        "--platform",
+        "APP",
+        "--type",
+        "appResource",
+        "--project",
+        HBuilderConfig.project,
+      ],
+      function (code, data) {
+        if (code == 0) {
+          resolve(apps);
+        } else if (code == -1 && data) {
+          //自定义异常
+          console.log(data);
+          reject(-1, data);
+        } else if (code == -2 && data) {
+          //进程正常返回数据
+          console.log(data);
+
+          if (data.indexOf(`导出成功，路径为：`) != -1) {
+            var appPath = data.split("导出成功，路径为：")[1];
+
+            if (!appPath) {
+              reject("打包的路径获取出错");
+              return;
+            }
+            apps.push(appPath);
+          }
+        } else if (code == -3 && data) {
+          //进程异常返回数据
+          console.log(data); // 追加一行
+          reject(data);
+        }
+      }
+    );
+  });
+}
+
 function GetUrl(str) {
   const reg =
     /(https?|http|ftp|file):\/\/[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]/g;
@@ -263,11 +354,11 @@ function GetUrl(str) {
 
 /**
  *
- * @param {*} iscustom 是不是自定义基座
+ * @param {boolean} isCustom 是不是自定义基座
  * @returns
  */
 
-function buildApp(iscustom) {
+function buildApp(isCustom) {
   return new Promise(async (resolve, reject) => {
     try {
       var OpenHBuilderCode = await OpenHBuilder();
@@ -276,62 +367,99 @@ function buildApp(iscustom) {
         return;
       }
       var apps = [];
-      buildAppCli(config.ConfigFileTemp, function (code, data) {
-        // code==-1 自定义错误code,-2是正常数据,-3是错误数据, 其他是进程code
-        if (code == 0) {
-          if (iscustom === false) {
-            if (apps.length) {
-              console.log("安装包", apps);
-            } else {
-              console.log("未获取到安装包");
+      RunCli(
+        ["pack", "--config", config.ConfigFileTemp],
+        function (code, data) {
+          // code==-1 自定义错误code,-2是正常数据,-3是错误数据, 其他是进程code
+          if (code == 0) {
+            if (isCustom === false) {
+              if (apps.length) {
+                console.log("安装包", apps);
+              } else {
+                console.log("未获取到安装包");
+              }
             }
-          }
 
-          resolve(apps);
-        } else if (code == -1 && data) {
-          //自定义异常
-          console.log(data);
-          reject(-1, data);
-        } else if (code == -2 && data) {
-          //进程正常返回数据
-          console.log(data);
+            resolve(apps);
+          } else if (code == -1 && data) {
+            //自定义异常
+            console.log(data);
+            reject(-1, data);
+          } else if (code == -2 && data) {
+            //进程正常返回数据
+            console.log(data);
 
-          if (
-            data.indexOf("打包成功") != -1 &&
-            data.indexOf("安装包位置：") != -1
-          ) {
-            // 打包成功    安装包位置：E:/xiangheng/通知订阅/消息订阅/unpackage/release/apk/__UNI__ECA51B4__20220426171608.apk
-            var appPath = data.split("安装包位置：")[1];
-            appPath = appPath.split(" ")[0];
-            if (!appPath) {
-              reject("打包的路径获取出错");
-              return;
+            if (
+              data.indexOf("打包成功") != -1 &&
+              data.indexOf("安装包位置：") != -1
+            ) {
+              // 打包成功    安装包位置：E:/xiangheng/通知订阅/消息订阅/unpackage/release/apk/__UNI__ECA51B4__20220426171608.apk
+              var appPath = data.split("安装包位置：")[1];
+              appPath = appPath.split(" ")[0];
+              if (!appPath) {
+                reject("打包的路径获取出错");
+                return;
+              }
+              var newAppPath = appPath
+                .replace(/\//g, "\\")
+                .replace(/\n/g, "")
+                .replace(/(\s*$)/g, "");
+
+              apps.push(newAppPath);
             }
-            var newAppPath = appPath
-              .replace(/\//g, "\\")
-              .replace(/\n/g, "")
-              .replace(/(\s*$)/g, "");
-
-            apps.push(newAppPath);
-          }
-          if (data.indexOf("iOS Appstore 下载地址:") != -1) {
-            // ios下载地址
-            var appUrl = GetUrl(data);
-            if (appUrl) {
-              // 下载文件
-              apps.push(appUrl);
+            if (data.indexOf("iOS Appstore 下载地址:") != -1) {
+              // ios下载地址
+              var appUrl = GetUrl(data);
+              if (appUrl) {
+                // 下载文件
+                apps.push(appUrl);
+              }
             }
+          } else if (code == -3 && data) {
+            //进程异常返回数据
+            console.log(data); // 追加一行
+            reject(data);
           }
-        } else if (code == -3 && data) {
-          //进程异常返回数据
-          console.log(data); // 追加一行
-          reject(data);
         }
-      });
+      );
     } catch (error) {
       console.log("error", error);
       reject(error);
     }
+  });
+}
+
+// nodejs封装方法打开指定目录，兼容win,mac,linux
+function openDirectory(filePath) {
+  const platform = process.platform;
+
+    // 获取文件的父目录
+    const parentDirectory = path.dirname(path.resolve(filePath));
+
+  // 根据操作系统选择合适的命令
+  let command;
+  switch (platform) {
+    case 'win32': // Windows
+      command = `start ${parentDirectory}`;
+      break;
+    case 'darwin': // macOS
+      command = `open ${parentDirectory}`;
+      break;
+    case 'linux': // Linux
+      command = `xdg-open ${parentDirectory}`;
+      break;
+    default:
+      console.error('Unsupported platform:', platform);
+      return;
+  }
+
+  // 使用child_process执行命令
+  cp.exec(command, (error) => {
+    if (error) {
+      console.error(`Error opening directory: ${error}`);
+      return;
+    }
+    console.log(`Directory opened successfully.`);
   });
 }
 module.exports = {
@@ -342,8 +470,11 @@ module.exports = {
   MergeManifestConfig,
   WriteConfig,
   buildApp,
+  buildWgtCli,
+  buildAppResourceCli,
   OpenHBuilder,
   OpenWifiDebug,
   ConnectPhoneWithWifi,
   GetUrl,
+  openDirectory
 };

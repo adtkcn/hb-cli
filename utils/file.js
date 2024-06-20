@@ -2,7 +2,7 @@ const axios = require("axios");
 const FormData = require("form-data");
 const fs = require("fs");
 const path = require("path");
-const dayjs = require("dayjs");
+// const dayjs = require("dayjs");
 
 /**
  * 上传文件
@@ -24,11 +24,7 @@ async function upload(uploadUrl, fileUrl, data) {
     }
   }
   formData.append("file", fileData);
-  // let len = await new Promise((resolve, reject) => {
-  //   return formData.getLength((err, length) =>
-  //     err ? reject(err) : resolve(length)
-  //   );
-  // });
+ 
   return new Promise((resolve, reject) => {
     axios({
       url: uploadUrl,
@@ -42,7 +38,7 @@ async function upload(uploadUrl, fileUrl, data) {
         if (progressEvent.lengthComputable) {
           //属性lengthComputable主要表明总共需要完成的工作量和已经完成的工作是否可以被测量
           //如果lengthComputable为false，就获取不到progressEvent.total和progressEvent.loaded
-          upLoadProgress = (progressEvent.loaded / progressEvent.total) * 100; //实时获取上传进度
+          let upLoadProgress = (progressEvent.loaded / progressEvent.total) * 100; //实时获取上传进度
           console.log(
             upLoadProgress + "%",
             progressEvent.loaded,
@@ -60,10 +56,15 @@ async function upload(uploadUrl, fileUrl, data) {
         reject(err);
       });
   });
-}
-// url 是图片地址
-// filepath 是文件下载的本地目录
-// name 是下载后的文件名
+} 
+
+/**
+ * 
+ * @param {string} url app资源地址
+ * @param {string} filepath 文件下载的本地目录
+ * @param {string} name 文件名称
+ * @returns 本地文件路径名称
+ */
 async function downloadFile(url, filepath, name) {
   console.log("准备下载文件", url);
   if (!fs.existsSync(filepath)) {

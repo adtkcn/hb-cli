@@ -6,9 +6,10 @@ const path = require("path");
 
 const app = new Koa();
 const router = new Router(); // 创建路由，支持传递参数
-const cp = require("child_process");
+ 
 
 const config = require("../config/config.js");
+const utils = require("../utils/utils.js");
 
 router.get("/download", async (ctx) => {
   try {
@@ -22,9 +23,6 @@ router.get("/download", async (ctx) => {
     var filePath = path.resolve(link);
 
     var basename = path.basename(filePath);
-    // console.log(basename); //文件名.扩展名
-    var extname = path.extname(filePath); //扩展名
-    // console.log(extname);
 
     var file = fs.readFileSync(filePath);
 
@@ -44,19 +42,13 @@ router.get("/open", async (ctx) => {
       return;
     }
     var link = decodeURIComponent(ctx.query.link);
+    utils.openDirectory(link);
 
-    if (process.platform == "win32") {
-      cp.exec("explorer.exe /select," + link);
-      ctx.body = {
-        code: 1,
-        msg: "ok",
-      };
-    } else {
-      ctx.body = {
-        code: 1,
-        msg: "暂时不支持",
-      };
-    }
+    // cp.exec("explorer.exe /select," + link);
+    ctx.body = {
+      code: 1,
+      msg: "win没问题，mac、linux不知道",
+    };
   } catch (error) {
     console.log(error);
   }
