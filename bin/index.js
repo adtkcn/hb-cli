@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 // const cp = require("child_process");
-const path = require("path");
+
 const inquirer = require("inquirer");
 const dayjs = require("dayjs");
 const utils = require("../utils/utils.js");
@@ -174,7 +174,7 @@ async function main() {
  * @param {"android"| "ios"| "android,ios"| "appResource"| "wgt"} answers.platform
  * @param {boolean} answers.iscustom false:正式版、true:自定义基座
  * @param {object} answers.updateVersion
- * @param {object} answers.envOptions
+ * @param {object} answers.env
  * @param {object} answers.config
  * @param {"打开手机调试并连接"|"连接到手机"} answers.wifi 安卓Wifi调试[]
  * @param {string} answers.selectPhoneIP 选择的手机IP

@@ -86,32 +86,38 @@ https://hx.dcloud.net.cn/cli/pack?id=config
 
   "hb_cli": {
     "upload": {
-      "url": "http://127.0.0.1/upload",// 自定义上传地址，可以是蒲公英之类的
-      "formData": {} //上传附加内容，不要包含file字段,因为文件是file
+      "url": "http://127.0.0.1:1080/api/file/upload",
+      "formData": {} //上传附加内容，文件是file
     },
-    "HBuilderConfig": { // 修改打包的配置项
+    "HBuilderConfig": {
+      // 基础,其他任意选项会合并base变量
+      // HBuilderConfig 属性，可定义上方除hb_cli的所有属性，以实现切换证书之类的操作
       "base": {
         "project": "消息订阅2",
+        "android": {
+          "packagename": "cn.adtk.base"
+        }
       },
-      "prod": {//会合并base
+      "prod": {
         "project": "消息订阅3",
         "android": {
           "packagename": "cn.adtk.prod"
         }
       }
     },
-    "env":{
+    "env": {
       "base": {
         // 基础,其他任意选项会合并base变量
-        // HBuilderConfig 属性，可定义上方除hb_cli的所有属性，以实现切换证书之类的操作
-        // 除HBuilderConfig 属性外，都会输出到HBuilderEnv.js 文件，实现app内切换环境变量
-        "url": "https://base.a.cn"
+        // 实现app内切换环境变量
+  
+        "url": "https://base.adtk.cn",
+        "a": 123
       },
-      "prod": { //会合并base
-        "url": "https://prod.a.cn"
-      },
+      "prod": { //合并基础
+        "url": "https://prod.adtk.cn"
+      }
     }
-  },
+  }
 }
 ```
 ## 配置文件说明
