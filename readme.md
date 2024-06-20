@@ -4,7 +4,7 @@
 npm i -g @adtkcn/hb-cli
 ```
 # 功能
-1. 简化打包安卓/ios App
+1. 简化打包安卓、ios,本地打包App资源、wgt包
 2. 切换环境变量，根据配置中`hb_cli.env.*`生成js文件
 3. 切换不同配置参数，根据配置中`hb_cli.HBuilderConfig.*`生成不同的配置文件
 4. 更改版本号
