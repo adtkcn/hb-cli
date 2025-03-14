@@ -206,12 +206,24 @@ async function handlePrompt(
     gen.generateCode(env);
   }
   if (answers.config) {
+    const answersConfig = HBuilderConfig.hb_cli.HBuilderConfig[answers.config]
     let newHBuilderConfig = merge.deepAssign(
       {},
       HBuilderConfig.hb_cli.HBuilderConfig["base"],
-      HBuilderConfig.hb_cli.HBuilderConfig[answers.config]
+      answersConfig
     );
     HBuilderConfig = merge.deepAssign({}, HBuilderConfig, newHBuilderConfig);
+
+    if (answersConfig && answersConfig.manifest) {
+      // 合并到 manifest ，避免后续的`改版本号`覆盖
+      merge.deepAssign(
+        manifest,
+        HBuilderConfig.hb_cli.HBuilderConfig["base"]?.manifest,
+        answersConfig.manifest
+      )
+      let ManifestConfig = utils.MergeManifestConfig(manifest)
+      await utils.WriteConfig("manifest.json", ManifestConfig)
+    }
   }
 
   if (
