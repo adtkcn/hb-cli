@@ -148,7 +148,7 @@ module.exports = ({ manifest, pack }) => {
      * @param {string} filePath 文件路径
      * @param {"android", "ios", "appResource", "wgt"} fileType 文件类型
      */
-    upload(filePath, fileType) {
+    async upload(filePath, fileType) {
       //上传回调
       console.log(filePath, fileType);
     },
@@ -156,27 +156,15 @@ module.exports = ({ manifest, pack }) => {
 };
 
 ```
-## 配置文件说明
-
-`hb_cli` 目录是本插件自定义属性，可忽略，其他都是hbuilder官方配置
-
-`hb_cli.upload.url` 上传接口路径： 如果配置，将会自动上传
-
-`hb_cli.upload.formData` 上传接口附带内容formData
- 
-`hb_cli.env` 环境变量，执行hb-cli命令时选择`环境变量`,将会选择对应的key，选择任意key都会合并base对象，生成HBuilderEnv.js文件
-
-`hb_cli.HBuilderConfig` 对hbuilder官方配置项进行替换，实现多配置
 
 
-
-## Git需要忽略的文件
+### Git需要忽略的文件
 ```
-.hbuilderx/HBuilderConfigTemp.json
-.hbuilderx/IpFile.json
+.hbuilderx/hb-cli.pack.json
+.hbuilderx/hb-cli.ip.json
 ```
 
-wifi调试原理
+### wifi调试用到的命令参考
 ```
 D:\办公软件\HBuilderX\plugins\launcher\tools\adbs\adb.exe tcpip 5555
 D:\办公软件\HBuilderX\plugins\launcher\tools\adbs\adb.exe connect 192.168.3.2

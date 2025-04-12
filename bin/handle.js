@@ -116,7 +116,7 @@ async function handle(
         console.log("本地目录：", appUrl);
 
         if (hb_cli?.upload) {
-          hb_cli.upload(appUrl, platform);
+          await hb_cli.upload(appUrl, platform);
         }
       });
     } else if (answers.platform == "wgt") {
@@ -128,7 +128,7 @@ async function handle(
           utils.openDirectory(apps[i]);
 
           if (hb_cli?.upload) {
-            hb_cli.upload(apps[i], "wgt");
+          await hb_cli.upload(apps[i], "wgt");
           }
         }
       }
