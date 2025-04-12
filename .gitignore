@@ -20,7 +20,7 @@ vendor/
 config.json
 package-lock.json
 node_modules
-HBuilderConfig.json
 manifest.json
+hb-cli.config.js
 .hbuilderx
 HBuilderEnv.js

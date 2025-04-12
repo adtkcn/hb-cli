@@ -1,3 +1,6 @@
+# v2.0.0
+配置文件从`HBuilderConfig.json`改为`hb-cli.config.js`
+
 # v1.0.7
 - 加入生成本地打包App资源
 - 加入导出wgt包

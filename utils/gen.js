@@ -17,9 +17,9 @@ export const HBuilderEnv=${JSON.stringify(jsonObj, undefined, "\t")}
 export default HBuilderEnv;
     `;
 }
-function generateCode(obj) {
+async function generateCode(obj) {
   console.log("生成文件：", config.genEnvConfigFile);
-  utils.WriteConfig(config.genEnvConfigFile, gencode(obj));
+  await utils.WriteConfig(config.genEnvConfigFile, gencode(obj));
 }
 module.exports = {
   generateCode,

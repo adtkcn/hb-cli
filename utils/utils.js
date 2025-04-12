@@ -6,6 +6,7 @@ const JSON5 = require("json5");
 var iconv = require("iconv-lite");
 
 const config = require("../config/config.js");
+const { deepAssign } = require("./merge.js");
 
 var workDir = process.cwd();
 
@@ -70,20 +71,21 @@ function OpenHBuilder() {
   return new Promise((resolve, reject) => {
     try {
       var ls = cp.spawn(config.HBuilderCli, ["open"], {});
+
       ls.on("exit", function (code) {
         if (code === 0) {
-          console.log("打开编辑器 状态： 成功" + code);
+          console.log("打开HBuilder编辑器成功");
           // 给hbuilder加载时间
           setTimeout(() => {
             resolve(0);
           }, 4000);
         } else {
-          console.log("打开编辑器 状态： 失败" + code);
-          reject(code);
+          console.log("打开HBuilder编辑器失败");
+          reject(1);
         }
       });
     } catch (error) {
-      console.log("打开编辑器 错误", error);
+      console.log("打开HBuilder编辑器错误", error);
       reject(1);
     }
   });
@@ -167,7 +169,7 @@ function readConfig(FileName) {
 /**
  * 更改配置文件
  * @param {string} ConfigFilePath
- * @param {string} Config
+ * @param {string|object} Config
  * @returns {Promise<string>}
  */
 function WriteConfig(ConfigFilePath, Config = "") {
@@ -182,37 +184,55 @@ function WriteConfig(ConfigFilePath, Config = "") {
           console.log(err);
           return reject(err);
         }
-        fs.writeFileSync(ConfigFilePath, Config);
+        if (typeof Config == "string") {
+          fs.writeFileSync(ConfigFilePath, Config);
+        } else if (typeof Config == "object") {
+          fs.writeFileSync(
+            ConfigFilePath,
+            JSON.stringify(Config, undefined, "\t")
+          );
+        }
+
         resolve(ConfigFilePath);
       }
     );
   });
 }
 
-// 合并HBuilderConfig配置文件
-function MergeHBuilderConfig(HBuilderConfig = {}, info = {}) {
-  HBuilderConfig.android = Object.assign({}, HBuilderConfig.android, {
-    certfile: HBuilderConfig.android.certfile
-      ? path.join(workDir, HBuilderConfig.android.certfile)
+/**
+ * 合并HBuilderConfig配置文件
+ * @param {object} packConfig
+ * @param {object} info
+ * @return {object}
+ */
+function MergeHBuilderConfig(packConfig = {}, info = {}) {
+  packConfig.android = deepAssign({}, packConfig.android, {
+    certfile: packConfig.android.certfile
+      ? path.join(workDir, packConfig.android.certfile)
       : "",
   });
-  HBuilderConfig.ios = Object.assign({}, HBuilderConfig.ios, {
-    profile: HBuilderConfig.ios.profile
-      ? path.join(workDir, HBuilderConfig.ios.profile)
+  packConfig.ios = deepAssign({}, packConfig.ios, {
+    profile: packConfig.ios.profile
+      ? path.join(workDir, packConfig.ios.profile)
       : "",
-    certfile: HBuilderConfig.ios.certfile
-      ? path.join(workDir, HBuilderConfig.ios.certfile)
+    certfile: packConfig.ios.certfile
+      ? path.join(workDir, packConfig.ios.certfile)
       : "",
   });
 
-  var newConfig = Object.assign({}, HBuilderConfig, info);
-  var str = JSON.stringify(newConfig, undefined, "\t");
-  return str;
+  var newConfig = deepAssign({}, packConfig, info);
+  return newConfig;
 }
+/**
+ *
+ * @param {object} ManifestConfig
+ * @param {object} info
+ * @returns {object}
+ */
 function MergeManifestConfig(ManifestConfig = {}, info = {}) {
-  var newConfig = Object.assign({}, ManifestConfig, info);
-  var str = JSON.stringify(newConfig, undefined, "\t");
-  return str;
+  var newConfig = deepAssign({}, ManifestConfig, info);
+  // var str = JSON.stringify(newConfig, undefined, "\t");
+  return newConfig;
 }
 
 /**
@@ -342,6 +362,11 @@ function buildAppResourceCli(HBuilderConfig) {
   });
 }
 
+/**
+ * 从字符串中提取首个URL地址
+ * @param {string} str - 需要解析的原始字符串
+ * @returns {string|null} 返回找到的第一个URL地址，未找到返回null
+ */
 function GetUrl(str) {
   const reg =
     /(https?|http|ftp|file):\/\/[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]/g;
@@ -357,15 +382,14 @@ function GetUrl(str) {
  * @param {boolean} isCustom 是不是自定义基座
  * @returns
  */
+async function buildApp(isCustom) {
+  var OpenHBuilderCode = await OpenHBuilder();
+  if (OpenHBuilderCode !== 0) {
+    return "打开HBuilder编辑器失败";
+  }
 
-function buildApp(isCustom) {
-  return new Promise(async (resolve, reject) => {
+  return new Promise((resolve, reject) => {
     try {
-      var OpenHBuilderCode = await OpenHBuilder();
-      if (OpenHBuilderCode !== 0) {
-        reject("打开HBuilder编辑器失败");
-        return;
-      }
       var apps = [];
       RunCli(
         ["pack", "--config", config.ConfigFileTemp],
@@ -429,27 +453,30 @@ function buildApp(isCustom) {
   });
 }
 
-// nodejs封装方法打开指定目录，兼容win,mac,linux
+/**
+ * 打开指定目录:nodejs封装方法打开指定目录，兼容win,mac,linux
+ * @param {string} filePath 文件路径
+ */
 function openDirectory(filePath) {
   const platform = process.platform;
 
-    // 获取文件的父目录
-    const parentDirectory = path.dirname(path.resolve(filePath));
+  // 获取文件的父目录
+  const parentDirectory = path.dirname(path.resolve(filePath));
 
   // 根据操作系统选择合适的命令
   let command;
   switch (platform) {
-    case 'win32': // Windows
+    case "win32": // Windows
       command = `start ${parentDirectory}`;
       break;
-    case 'darwin': // macOS
+    case "darwin": // macOS
       command = `open ${parentDirectory}`;
       break;
-    case 'linux': // Linux
+    case "linux": // Linux
       command = `xdg-open ${parentDirectory}`;
       break;
     default:
-      console.error('Unsupported platform:', platform);
+      console.error("Unsupported platform:", platform);
       return;
   }
 
@@ -476,5 +503,5 @@ module.exports = {
   OpenWifiDebug,
   ConnectPhoneWithWifi,
   GetUrl,
-  openDirectory
+  openDirectory,
 };
