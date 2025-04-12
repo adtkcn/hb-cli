@@ -1,12 +1,9 @@
-### 旧版本说明 
-[v1版本说明](./readme_v1.md)
-
-# 项目本地安装
+## 项目本地安装
 
 ```
 npm i -D @adtkcn/hb-cli
 ```
-# 功能
+## 功能
 - 简化打包：安卓、ios,本地打包App资源、wgt包
 - 切换打包配置：根据`packConfig()`返回对象打包 
 - 切换环境变量：根据`createEnv()`返回对象生成js文件
@@ -16,10 +13,8 @@ npm i -D @adtkcn/hb-cli
 - 自动下载ios包到本地
 - 自动上传安装包到`hb_cli.upload.url`指定的地址
 
-## 更新日志
-[change.md](./change.md)
 
-# 运行
+## 运行
 
 - 本地安装 @adtkcn/hb-cli
 - 在项目下创建 `hb-cli.config.js`
@@ -30,7 +25,7 @@ npm i -D @adtkcn/hb-cli
 npx hb-cli -p base -m base
 ```
 
-# HBuilderConfig.json，内容如下:
+# hb-cli.config.js，内容如下:
 
 https://hx.dcloud.net.cn/cli/pack?id=config
 
@@ -157,6 +152,12 @@ module.exports = ({ manifest, pack }) => {
 
 ```
 
+
+### 更新日志
+[change.md](./change.md)
+
+### 旧版本说明 
+[v1版本说明](./readme_v1.md)
 
 ### Git需要忽略的文件
 ```
