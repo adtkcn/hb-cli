@@ -1,7 +1,0 @@
-{
-  "include": ["bin/​**​/*"], // 按实际路径调整
-  
-  "compilerOptions": {
-    /*...*/
-  }
-}

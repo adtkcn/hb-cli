@@ -9,17 +9,19 @@ const dayjs = require("dayjs");
  *
  * @param {object} hb_cli
  * @param {object} answers
- * @param {打包| 改版本号| 环境变量| Wifi调试} answers.function
+ * @param {'打包'| '改版本号'| '环境变量'| 'Wifi调试'} answers.function
  * @param {"android"| "ios"| "android,ios"| "appResource"| "wgt"} answers.platform
  * @param {boolean} answers.iscustom false:正式版、true:自定义基座
  * @param {boolean} answers.changeVersion 改版本号
 
- * @param {打开手机调试并连接|连接到手机} answers.wifi 安卓Wifi调试[]
+ * @param {'openWifiDebugAndConnect'|'connectToPhone'} answers.wifi 安卓Wifi调试[]
  * @param {string} answers.selectPhoneIP 选择的手机IP
  * @param {string} answers.inputPhoneIP 输入的手机IP
  *
- * @param {object} manifest
  * @param {object} NewManifestConfig 新的manifest.json配置项
+ * @param {string} NewManifestConfig.versionName 版本号
+ * @param {number} NewManifestConfig.versionCode 版本号
+ * @param {string} NewManifestConfig.name 应用名称
  * @param {object} packConfig 打包配置项
  * @param {string} newVersion 新的版本号
  * @param {object} envConfig 环境变量配置项
@@ -42,7 +44,7 @@ async function handle(
 
   if (answers.changeVersion == true) {
     NewManifestConfig.versionName = newVersion;
-    NewManifestConfig.versionCode = parseInt(NewManifestConfig.versionCode) + 1;
+    NewManifestConfig.versionCode = Number(NewManifestConfig.versionCode) + 1;
   }
   // console.log("NewManifestConfig", answers.changeVersion, newVersion);
 
@@ -60,13 +62,13 @@ async function handle(
     await utils.WriteConfig(config.IpFile, [...AndroidIpList, ip]);
   }
 
-  if (answers.wifi == "打开手机调试并连接") {
+  if (answers.wifi == "openWifiDebugAndConnect") {
     let wifiStatus = await utils.OpenWifiDebug();
     if (wifiStatus == 0) {
       await utils.ConnectPhoneWithWifi(ip);
     }
   }
-  if (answers.wifi == "连接到手机") {
+  if (answers.wifi == "connectToPhone") {
     await utils.ConnectPhoneWithWifi(ip);
   }
 
@@ -128,7 +130,7 @@ async function handle(
           utils.openDirectory(apps[i]);
 
           if (hb_cli?.upload) {
-          await hb_cli.upload(apps[i], "wgt");
+            await hb_cli.upload(apps[i], "wgt");
           }
         }
       }

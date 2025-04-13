@@ -6,6 +6,12 @@ const config = require("../config/config.js");
 
 const { handle } = require("./handle.js");
 
+/**
+ *
+ * @param {object} options
+ * @param {string} options.mode 打包模式
+ * @returns
+ */
 async function prompt(options) {
   // 读取hb-cli.config.js文件
   let hb_cli = null;
@@ -16,11 +22,11 @@ async function prompt(options) {
     } else {
       hb_cli = hb_cli_config;
     }
-    // eslint-disable-next-line no-unused-vars
   } catch (err) {
     console.log(
       "hb-cli.config.js文件读取错误\n",
-      "请在项目根目录下运行命令或者创建hb-cli.config.js文件"
+      "请在项目根目录下运行命令或者创建hb-cli.config.js文件\n",
+      err
     );
   }
   if (!hb_cli) {
@@ -30,7 +36,7 @@ async function prompt(options) {
     .readConfig(config.manifestFileName)
     .catch(function (err) {
       console.log(
-        "manifest.json文件读取错误，检查是否在项目根目录执行命令",
+        "manifest.json文件读取错误，检查是否在项目根目录执行命令\n",
         err
       );
     });
@@ -132,32 +138,20 @@ async function prompt(options) {
           return true;
         },
       },
-      // {
-      //   type: "list",
-      //   message: `环境变量`,
-      //   name: "env",
-      //   choices:  ,
-      //   when: function (answers) {
-      //     return (
-      //        .length &&
-      //       (answers.function == "环境变量" || answers.function == "打包")
-      //     );
-      //   },
-      // },
-      // {
-      //   type: "list",
-      //   message: `更换配置`,
-      //   name: "config",
-      //   choices: configOptions,
-      //   when: function (answers) {
-      //     return configOptions.length && answers.function == "打包";
-      //   },
-      // },
       {
         type: "list",
-        message: `安卓Wifi调试(手机需先开启usb调试并连接usb一次)`,
+        message: `安卓Wifi调试`,
         name: "wifi",
-        choices: ["打开手机调试并连接", "连接到手机"],
+        choices: [
+          {
+            name: "打开手机调试并连接(手机需先开启usb调试,并连接usb一次)",
+            value: "openWifiDebugAndConnect",
+          },
+          {
+            name: "连接到手机(用于重新连接,不用连接usb)",
+            value: "connectToPhone",
+          },
+        ],
         when: function (answers) {
           return answers.function == "Wifi调试";
         },

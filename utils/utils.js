@@ -139,14 +139,14 @@ function openDefaultBrowser(url) {
       cp.exec("start " + url);
       break;
     default:
-      cp.exec("xdg-open", [url]);
+      cp.exec(`xdg-open "${url}"`);
   }
 }
 
 /**
  * 读取工作目录配置文件
  * @param {string} FileName
- * @returns {Promise<object>}
+ * @returns {Promise<any>}
  */
 function readConfig(FileName) {
   return new Promise((resolve, reject) => {
@@ -202,25 +202,25 @@ function WriteConfig(ConfigFilePath, Config = "") {
 /**
  * 合并HBuilderConfig配置文件
  * @param {object} packConfig
+ * @param {object} packConfig.android
+ * @param {string} packConfig.android.certfile
+ * @param {object} packConfig.ios
+ * @param {string} packConfig.ios.profile
+ * @param {string} packConfig.ios.certfile
  * @param {object} info
  * @return {object}
  */
-function MergeHBuilderConfig(packConfig = {}, info = {}) {
-  packConfig.android = deepAssign({}, packConfig.android, {
-    certfile: packConfig.android.certfile
-      ? path.join(workDir, packConfig.android.certfile)
-      : "",
-  });
-  packConfig.ios = deepAssign({}, packConfig.ios, {
-    profile: packConfig.ios.profile
-      ? path.join(workDir, packConfig.ios.profile)
-      : "",
-    certfile: packConfig.ios.certfile
-      ? path.join(workDir, packConfig.ios.certfile)
-      : "",
-  });
-
+function MergeHBuilderConfig(packConfig, info = {}) {
   var newConfig = deepAssign({}, packConfig, info);
+  newConfig.android.certfile = newConfig.android.certfile
+    ? path.join(workDir, newConfig.android.certfile)
+    : "";
+  newConfig.ios.profile = newConfig.ios.profile
+    ? path.join(workDir, newConfig.ios.profile)
+    : "";
+  newConfig.ios.certfile = newConfig.ios.certfile
+   ? path.join(workDir, newConfig.ios.certfile)
+    : "";
   return newConfig;
 }
 /**
@@ -268,6 +268,7 @@ function RunCli(cli, callback) {
 /**
  * 导出wgt包
  * @param {object} HBuilderConfig
+ * @param {string} HBuilderConfig.project
  * @returns {Promise<Array>}
  */
 function buildWgtCli(HBuilderConfig) {
@@ -291,7 +292,7 @@ function buildWgtCli(HBuilderConfig) {
         } else if (code == -1 && data) {
           //自定义异常
           console.log(data);
-          reject(-1, data);
+          reject( data);
         } else if (code == -2 && data) {
           //进程正常返回数据
           console.log(data);
@@ -317,6 +318,7 @@ function buildWgtCli(HBuilderConfig) {
 /**
  * 导出appResource
  * @param {object} HBuilderConfig
+ * @param {string} HBuilderConfig.project
  * @returns {Promise<Array>}
  */
 function buildAppResourceCli(HBuilderConfig) {
@@ -338,7 +340,7 @@ function buildAppResourceCli(HBuilderConfig) {
         } else if (code == -1 && data) {
           //自定义异常
           console.log(data);
-          reject(-1, data);
+          reject(data);
         } else if (code == -2 && data) {
           //进程正常返回数据
           console.log(data);
@@ -408,7 +410,7 @@ async function buildApp(isCustom) {
           } else if (code == -1 && data) {
             //自定义异常
             console.log(data);
-            reject(-1, data);
+            reject(data);
           } else if (code == -2 && data) {
             //进程正常返回数据
             console.log(data);

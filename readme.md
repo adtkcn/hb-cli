@@ -20,9 +20,9 @@ npm i -D @adtkcn/hb-cli
 - 在项目下创建 `hb-cli.config.js`
 - 系统变量里加入`HBuilder`，指向 HBuilder 安装目录
 ![环境变量](./doc/env.png)
-- 在项目下运行命令
+- 在项目下运行命令(可以将命令定义在`package.json`中方便使用)
 ```bash
-npx hb-cli -p base -m base
+npx hb-cli --mode base
 ```
 
 # hb-cli.config.js，内容如下:
