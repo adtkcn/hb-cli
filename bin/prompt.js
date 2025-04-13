@@ -77,7 +77,7 @@ async function prompt(options) {
     AndroidIpList = await utils.readConfig(config.IpFile);
   } catch (error) {
     AndroidIpList = [];
-    console.log(error);
+    // console.log(error);
   }
 
   inquirer

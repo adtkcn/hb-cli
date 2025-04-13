@@ -2,7 +2,9 @@
   "name": "@adtkcn/hb-cli",
   "version": "2.0.0",
   "description": "用于uniapp的打包工具，可切换环境变量、可多配置，切换证书，更改版本，wifi调试",
-  "main": "./index.js",
+  "main": "./index.cjs",
+  "module": "./index.mjs",
+  "types": "./index.d.ts",
   "bin": {
     "hb-cli": "bin/index.js"
   },
@@ -13,7 +15,6 @@
   "author": "adtkcn",
   "license": "ISC",
   "dependencies": {
-    "axios": "^0.27.2",
     "commander": "^13.1.0",
     "dayjs": "^1.11.1",
     "form-data": "^4.0.0",
