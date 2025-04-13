@@ -1,41 +1,48 @@
-## 项目本地安装
 
-```
-npm i -D @adtkcn/hb-cli
-```
+- [https://www.npmjs.com/package/@adtkcn/hb-cli](https://www.npmjs.com/package/@adtkcn/hb-cli)
+- [https://github.com/adtkcn/hb-cli](https://github.com/adtkcn/hb-cli)
+
 ## 功能
 - 简化打包：安卓、ios,本地打包App资源、wgt包
-- 切换打包配置：根据`packConfig()`返回对象打包 
-- 切换环境变量：根据`createEnv()`返回对象生成js文件
-- 切换manifest参数：根据`mergeManifestConfig()`返回对象合并`manifest.json`文件
-- 更改版本号
+- 切换打包配置：根据`packConfig()`返回的对象打包 
+- 切换环境变量：根据`createEnv()`返回的对象生成js文件
+- 切换manifest参数：根据`mergeManifestConfig()`返回的对象合并`manifest.json`文件
+- 升级manifest版本号：可自动加一、当前日期、自定义版本号
 - wifi调试
 - 自动下载ios包到本地
-- 自动上传安装包到`hb_cli.upload.url`指定的地址
+- 打包回调：打包完成后回调，可自定义回调函数用于上传等操作
 
 
 ## 运行
 
-- 本地安装 @adtkcn/hb-cli
-- 在项目下创建 `hb-cli.config.js`
-- 系统变量里加入`HBuilder`，指向 HBuilder 安装目录
+- 本地安装 `npm i -D @adtkcn/hb-cli`
+- 在项目根目录下创建配置文件 `hb-cli.config.js`
+- 系统变量里加入`HBuilder`，指向 HBuilder 编辑器安装目录
 ![环境变量](./doc/env.png)
 - 在项目下运行命令(可以将命令定义在`package.json`中方便使用)
 ```bash
 npx hb-cli --mode base
 ```
 
-# hb-cli.config.js，内容如下:
+## hb-cli.config.js，内容如下:
+
+`packConfig`返回的对象都是官方配置，其中platform,iscustom字段无需填写
 
 https://hx.dcloud.net.cn/cli/pack?id=config
 
-`packConfig`返回对象都是官方配置：platform,iscustom字段无需填写
-
 ```js
-module.exports = ({ manifest, pack }) => {
-  console.log("当前pack环境：", pack, "当前manifest类型：", manifest);
+const { defineConfig } = require("@adtkcn/hb-cli");
 
-  return {
+/**
+ *
+ * @param {object} param0
+ * @param {string} param0.mode 打包模式,通过命令行参数--mode传入
+ * @returns
+ */
+module.exports = ({ mode }) => {
+  console.log("当前mode环境：", mode);
+
+  return defineConfig({
     // 打包配置项，全部为uniapp官方配置(必须)
     packConfig() {
       return {
@@ -54,13 +61,13 @@ module.exports = ({ manifest, pack }) => {
           packagename: "cn.adtk.push",
           //安卓打包类型 默认值0： 0 使用自有证书 1 使用公共证书 2 使用老版证书 3云端证书
           androidpacktype: "3",
-          
+
           //安卓打包证书别名,自有证书打包填写的参数
           certalias: "zdhlapp",
           //安卓打包证书文件路径,自有证书打包填写的参数
-          certfile: "",
+          certfile: "a",
           //安卓打包证书密码,自有证书打包填写的参数
-          certpassword: "NHS23456",
+          certpassword: "password",
           //安卓平台要打的渠道包 取值有"google","yyb","360","huawei","xiaomi","oppo","vivo"，如果要打多个逗号隔开
           channels: "",
         },
@@ -73,9 +80,9 @@ module.exports = ({ manifest, pack }) => {
           //iOS打包是否打越狱包,只有值为true时打越狱包,false打正式包
           isprisonbreak: false,
           //iOS使用自定义证书打包的profile文件路径
-          profile: "",
+          profile: "a",
           //iOS使用自定义证书打包的p12文件路径
-          certfile: "",
+          certfile: "a",
           //iOS使用自定义证书打包的证书密码
           certpassword: "",
         },
@@ -95,33 +102,31 @@ module.exports = ({ manifest, pack }) => {
     mergeManifestConfig() {
       return {
         name: "消息订阅_11111",
-        appid: "__UNI__ECA51B4_11111",
         "app-plus": {
           nvueStyleCompiler: "uni-app_11111",
         },
       };
     },
     /**
-     * 创建APP内环境变量，生成js文件
-     * @returns {Object} 环境变量
+     * 创建APP内环境变量，生成HBuilderEnv.js文件（可选）
+     * @returns {any} 环境变量
      */
     createEnv() {
       var info = {
-        base: {
-          // 基础,其他任意选项会合并base变量
-          // 实现app内切换环境变量
-
+        dev: {
           url: "https://base.adtk.cn",
         },
         prod: {
-          //合并基础
           url: "https://prod.adtk.cn",
         },
       };
-      return info[pack];
+      if (mode == "dev") {
+        return info.dev;
+      }
+      return info.prod;
     },
     /**
-     * 定义manifest.versionName的生成规则
+     * 定义manifest.versionName的生成规则(可选，默认：auto-increment)
      */
     version: {
       mode: "date", // 可选值："custom"、"date"、"auto-increment",
@@ -133,7 +138,9 @@ module.exports = ({ manifest, pack }) => {
       customVersion: (VersionNameArr) => {
         console.log(VersionNameArr);
         var lastIndex = VersionNameArr.length - 1;
-        VersionNameArr[lastIndex] = parseInt(VersionNameArr[lastIndex]) + 1;
+        VersionNameArr[lastIndex] = String(
+          parseInt(VersionNameArr[lastIndex]) + 1
+        );
         return VersionNameArr.join(".");
       },
     },
@@ -141,14 +148,15 @@ module.exports = ({ manifest, pack }) => {
     /**
      * 自己处理上传逻辑：因为上传文件类型多样，所以需要自己处理
      * @param {string} filePath 文件路径
-     * @param {"android", "ios", "appResource", "wgt"} fileType 文件类型
+     * @param {"android"|"ios"| "appResource"| "wgt"} fileType 文件类型
      */
     async upload(filePath, fileType) {
       //上传回调
       console.log(filePath, fileType);
     },
-  };
+  });
 };
+
 
 ```
 
