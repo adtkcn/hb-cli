@@ -57,7 +57,13 @@ const server = http.createServer((req, res) => {
   console.log("请求路径", req.url);
 
   const pathname = req.url;
-
+  // 禁用缓存
+  res.setHeader(
+    "Cache-Control",
+    "no-store, no-cache, must-revalidate, proxy-revalidate"
+  );
+  res.setHeader("Pragma", "no-cache");
+  res.setHeader("Expires", "0");
   // 路由处理
   if (pathname === "/download") {
     try {
@@ -104,7 +110,7 @@ exports.init = function (filePath) {
   server.listen(config.port, () => {
     console.log("listening on port " + config.port);
   });
-  console.log("启动成功");
+
   let url = `http://${utils.getLocalIP()}:${config.port}`;
 
   utils.openDefaultBrowser(url);
