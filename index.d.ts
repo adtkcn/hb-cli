@@ -1,18 +1,7 @@
 declare namespace AppConfig {
   type Platform = "android" | "ios" | "android,ios";
 
-  type FileType = "android" | "ios" | "appResource" | "wgt";
-
   type VersionMode = "custom" | "date" | "auto-increment";
-
-  type AndroidChannel =
-    | "google"
-    | "yyb"
-    | "360"
-    | "huawei"
-    | "xiaomi"
-    | "oppo"
-    | "vivo";
 
   interface PackConfig {
     project?: string;
@@ -25,7 +14,7 @@ declare namespace AppConfig {
       certalias?: string;
       certfile?: string;
       certpassword?: string;
-      channels?: AndroidChannel | string;
+      channels?:  string;
       [key: string]: any;
     };
     ios?: {
@@ -62,12 +51,8 @@ declare namespace AppConfig {
     createEnv?: () => any;
 
     version?: VersionConfig;
-    upload?: (filePath: string, fileType: FileType) => Promise<void>;
+    onPackEnd?: (filePath: string, fileType: string) => Promise<void>;
   }
 }
 
-// declare function defineConfig(info: AppConfig.Configuration): void;
-
-// CommonJS 导出方式
-// export = defineConfig;
 export = AppConfig.Configuration;

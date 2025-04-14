@@ -51,23 +51,28 @@ async function prompt(options) {
 
   let VersionNameArr = manifest.versionName.split(".");
   let newVersion = "";
-  if (versionMode == "auto-increment") {
-    const lastIndex = VersionNameArr.length - 1;
-    VersionNameArr[lastIndex] = parseInt(VersionNameArr[lastIndex]) + 1;
-    newVersion = VersionNameArr.join(".");
-  } else if (versionMode == "date") {
-    newVersion = dayjs().format("YYYY.MM.DDHHmm");
-  } else if (versionMode == "custom") {
-    newVersion = hb_cli.version?.customVersion?.([...VersionNameArr]);
+  switch (versionMode) {
+    case "auto-increment": {
+      const lastIndex = VersionNameArr.length - 1;
+      VersionNameArr[lastIndex] = parseInt(VersionNameArr[lastIndex]) + 1;
+      newVersion = VersionNameArr.join(".");
+      break;
+    }
+    case "date":
+      newVersion = dayjs().format("YYYY.MM.DDHHmm");
+      break;
+    case "custom":
+      newVersion = hb_cli.version?.customVersion?.([...VersionNameArr]);
+      break;
   }
 
   if (!packConfig) {
     console.error("请定义packConfig函数并返回数据");
     return;
   }
-  console.log("读取pack配置", packConfig);
-  console.log("读取manifest配置", manifestConfig);
-  console.log("读取env配置", envConfig);
+  // console.log("读取pack配置", packConfig);
+  // console.log("读取manifest配置", manifestConfig);
+  // console.log("读取env配置", envConfig);
 
   // 合并后的manifest
   const NewManifestConfig = utils.MergeManifestConfig(manifest, manifestConfig);
@@ -86,7 +91,7 @@ async function prompt(options) {
         type: "list",
         message: "选择功能",
         name: "function",
-        choices: ["打包", "改版本号", "环境变量", "Wifi调试"],
+        choices: ["打包", "改版本号", "Wifi调试"],
       },
 
       {

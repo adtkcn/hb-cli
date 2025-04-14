@@ -146,11 +146,11 @@ module.exports = ({ mode }) => {
     },
 
     /**
-     * 自己处理上传逻辑：因为上传文件类型多样，所以需要自己处理
+     * 自己处理上传逻辑：因为上传文件类型多样，appResource打包后是目录,所以需要自己处理
      * @param {string} filePath 文件路径
      * @param {"android"|"ios"| "appResource"| "wgt"} fileType 文件类型
      */
-    async upload(filePath, fileType) {
+    async onPackEnd(filePath, fileType) {
       //上传回调
       console.log(filePath, fileType);
     },

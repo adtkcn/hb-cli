@@ -3,7 +3,6 @@
   "version": "2.0.0",
   "description": "用于uniapp的打包工具，可切换环境变量、可多配置，切换证书，更改版本，wifi调试",
   "main": "./index.cjs",
-  "module": "./index.mjs",
   "types": "./index.d.ts",
   "bin": {
     "hb-cli": "bin/index.js"
@@ -37,12 +36,13 @@
     "env",
     "打包",
     "环境变量",
-    "wifi"
+    "wifi",
+    "打包回调"
   ],
   "bugs": {
     "url": "https://github.com/adtkcn/hb-cli/issues"
   },
-  "homepage": "https://github.com/adtkcn/hb-cli#readme",
+  "homepage": "https://github.com/adtkcn/hb-cli",
   "devDependencies": {
     "@eslint/js": "^9.5.0",
     "eslint": "^9.5.0",

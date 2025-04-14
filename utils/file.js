@@ -70,7 +70,7 @@ async function downloadFile(url, filepath, name) {
     fs.mkdirSync(filepath, { recursive: true });
   }
   const savePath = path.join(filepath, name);
-  const writer = fs.createWriteStream(savePath);
+
 
   // 替换axios实现
   const http = url.startsWith('https') ? require('https') : require('http');
@@ -81,7 +81,7 @@ async function downloadFile(url, filepath, name) {
         reject(`服务器返回异常状态码: ${response.statusCode}`);
         return;
       }
-      
+      const writer = fs.createWriteStream(savePath);
       response.pipe(writer);
       
       writer.on('finish', () => {
@@ -96,7 +96,6 @@ async function downloadFile(url, filepath, name) {
         reject(err);
       });
     }).on('error', (err) => {
-      writer.end();
       console.log("请求失败");
       reject(err);
     });
@@ -108,6 +107,12 @@ async function downloadFile(url, filepath, name) {
 //   "./ios/app/ipa",
 //   Date.now() + ".ipa"
 // );
+// downloadFile(
+//   "http://img.ithome.com/newsuploadfiles/2025/4/6da8713f-35a8-476e-826c-c6951cdaf3a3.png?x-bce-process=image/format,f_avif",
+//   "./.hbuilderx",
+//   Date.now() + ".png"
+// );
+
 // upload(
 //   "http://127.0.0.1:1080/api/file/upload",
 //  "F:\\ShouGang\\nfcManage\\NFC\\unpackage\\release\\apk\\__UNI__D8AA064__20220924174752.apk"

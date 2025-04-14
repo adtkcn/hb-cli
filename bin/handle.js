@@ -6,10 +6,14 @@ const config = require("../config/config.js");
 const utils = require("../utils/utils.js");
 const dayjs = require("dayjs");
 /**
+ * @typedef {import('../index')} AppConfig
+ */
+
+/**
  *
- * @param {object} hb_cli
+ * @param {AppConfig} hb_cli
  * @param {object} answers
- * @param {'打包'| '改版本号'| '环境变量'| 'Wifi调试'} answers.function
+ * @param {'打包'| '改版本号'| 'Wifi调试'} answers.function
  * @param {"android"| "ios"| "android,ios"| "appResource"| "wgt"} answers.platform
  * @param {boolean} answers.iscustom false:正式版、true:自定义基座
  * @param {boolean} answers.changeVersion 改版本号
@@ -24,7 +28,7 @@ const dayjs = require("dayjs");
  * @param {string} NewManifestConfig.name 应用名称
  * @param {object} packConfig 打包配置项
  * @param {string} newVersion 新的版本号
- * @param {object} envConfig 环境变量配置项
+ * @param {*} envConfig 环境变量配置项
 
  * @param {string[]} AndroidIpList 安卓设备ip列表
  */
@@ -58,7 +62,7 @@ async function handle(
   }
 
   if (ip && !AndroidIpList.includes(ip)) {
-    console.log("写入IP文件：", config.IpFile);
+    console.log("缓存IP：", config.IpFile);
     await utils.WriteConfig(config.IpFile, [...AndroidIpList, ip]);
   }
 
@@ -74,7 +78,8 @@ async function handle(
 
   if (answers.function == "打包") {
     // 是否打包
-
+    let apps = [];
+    let hooks = [];
     // appFileUrl是本地文件路径时，是安卓，https开头是ios在线地址
     if (["android", "ios", "android,ios"].includes(answers.platform)) {
       let hbuilderconfig = utils.MergeHBuilderConfig(packConfig, {
@@ -84,15 +89,8 @@ async function handle(
 
       await utils.WriteConfig(config.ConfigFileTemp, hbuilderconfig);
 
-      let apps = await utils.buildApp(answers.iscustom);
-      if (
-        apps.length &&
-        answers.iscustom === false &&
-        ["android", "android,ios"].includes(answers.platform)
-      ) {
-        //正式版并且是安卓才启动文件服务
-        server.init();
-      }
+      apps = await utils.buildApp(answers.iscustom);
+
       apps.map(async (appUrl) => {
         let platform = "";
 
@@ -100,7 +98,7 @@ async function handle(
           platform = "ios";
           appUrl = await file.downloadFile(
             appUrl,
-            config.workDir + "/" + "unpackage/release/ipa",
+            config.workDir + "/unpackage/release/ipa",
             NewManifestConfig.name +
               "_" +
               dayjs().format("YYYYMMDDHHmm") +
@@ -117,32 +115,47 @@ async function handle(
         }
         console.log("本地目录：", appUrl);
 
-        if (hb_cli?.upload) {
-          await hb_cli.upload(appUrl, platform);
+        if (hb_cli?.onPackEnd) {
+          hooks.push(hb_cli.onPackEnd(appUrl, platform));
         }
       });
     } else if (answers.platform == "wgt") {
-      let apps = await utils.buildWgtCli(packConfig);
-      if (process.platform == "win32") {
-        for (let i = 0; i < apps.length; i++) {
-          console.log("explorer.exe /select," + apps[i]);
-          // cp.exec("explorer.exe /select," + apps[i]);
-          utils.openDirectory(apps[i]);
+      apps = await utils.buildWgtCli(packConfig);
 
-          if (hb_cli?.upload) {
-            await hb_cli.upload(apps[i], "wgt");
-          }
+      for (let i = 0; i < apps.length; i++) {
+        console.log("本地目录：", apps[i]);
+
+        utils.openDirectory(apps[i]);
+
+        if (hb_cli?.onPackEnd) {
+          hooks.push(hb_cli.onPackEnd(apps[i], "wgt"));
         }
       }
     } else if (answers.platform == "appResource") {
-      let apps = await utils.buildAppResourceCli(packConfig);
-      if (process.platform == "win32") {
-        for (let i = 0; i < apps.length; i++) {
-          console.log("explorer.exe /select," + apps[i]);
-          // cp.exec("explorer.exe /select," + apps[i]);
-          utils.openDirectory(apps[i]);
+      apps = await utils.buildAppResourceCli(packConfig);
+
+      for (let i = 0; i < apps.length; i++) {
+        console.log("本地目录：", apps[i]);
+
+        utils.openDirectory(apps[i]);
+
+        if (hb_cli?.onPackEnd) {
+          hooks.push(hb_cli.onPackEnd(apps[i], "appResource"));
         }
       }
+    }
+    if (hooks.length) {
+      await Promise.allSettled(hooks).then((res) => {
+        console.log("上传结束", res);
+      });
+    }
+    if (
+      apps.length &&
+      answers.iscustom === false &&
+      ["android", "android,ios"].includes(answers.platform)
+    ) {
+      //正式版并且是安卓才启动文件服务
+      server.init();
     }
   }
 }

@@ -1,8 +1,6 @@
 const path = require("path");
 const workDir = process.cwd();
 
-console.log("工作路径：", workDir);
-
 exports.workDir = workDir;
 exports.port = 10020;
 // 配置文件
@@ -15,6 +13,7 @@ exports.IpFile = path.join(workDir, "./.hbuilderx/hb-cli.ip.json");
 
 exports.genEnvConfigFile = path.join(workDir, "./HBuilderEnv.js");
 
+// 用到的工具
 exports.HBuilderAdb = path.join(
   process.env.HBuilder || "",
   "plugins/launcher/tools/adbs/adb"
