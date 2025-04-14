@@ -5,7 +5,7 @@
 ## 功能
 - 简化打包：安卓、ios,本地打包App资源、wgt包
 - 切换打包配置：根据`packConfig()`返回的对象打包 
-- 切换环境变量：根据`createEnv()`返回的对象生成js文件
+- 切换环境变量：根据`appConfig.create()`返回的对象生成js文件
 - 切换manifest参数：根据`mergeManifestConfig()`返回的对象合并`manifest.json`文件
 - 升级manifest版本号：可自动加一、当前日期、自定义版本号
 - wifi调试
@@ -111,19 +111,22 @@ module.exports = ({ mode }) => {
      * 创建APP内环境变量，生成HBuilderEnv.js文件（可选）
      * @returns {any} 环境变量
      */
-    createEnv() {
-      var info = {
-        dev: {
-          url: "https://base.adtk.cn",
-        },
-        prod: {
-          url: "https://prod.adtk.cn",
-        },
-      };
-      if (mode == "dev") {
-        return info.dev;
-      }
-      return info.prod;
+    appConfig:{
+      output:"src/config/HBuilderEnv.js", // 默认./HBuilderEnv.js
+      create(){
+        var info = {
+          dev: {
+            url: "https://base.adtk.cn",
+          },
+          prod: {
+            url: "https://prod.adtk.cn",
+          },
+        };
+        if (mode == "dev") {
+          return info.dev;
+        }
+        return info.prod;
+      },
     },
     /**
      * 定义manifest.versionName的生成规则(可选，默认：auto-increment)

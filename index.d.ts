@@ -37,7 +37,10 @@ declare namespace AppConfig {
   interface ManifestConfig {
     [key: string]: any;
   }
-
+  interface AppConfig {
+    output?: string;
+    create?: () => any;
+  }
   interface VersionConfig {
     mode?: VersionMode;
     customVersion?: (versionArr: string[]) => string;
@@ -48,7 +51,7 @@ declare namespace AppConfig {
 
     mergeManifestConfig?: () => Partial<ManifestConfig>;
 
-    createEnv?: () => any;
+    appConfig?: AppConfig;
 
     version?: VersionConfig;
     onPackEnd?: (filePath: string, fileType: string) => Promise<void>;

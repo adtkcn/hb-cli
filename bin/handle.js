@@ -30,7 +30,6 @@ const dayjs = require("dayjs");
  * @param {string} NewManifestConfig.name 应用名称
  * @param {object} packConfig 打包配置项
  * @param {string} newVersion 新的版本号
- * @param {*} envConfig 环境变量配置项
 
  * @param {string[]} AndroidIpList 安卓设备ip列表
  */
@@ -40,12 +39,17 @@ async function handle(
   NewManifestConfig,
   packConfig,
   newVersion,
-  envConfig,
   AndroidIpList
 ) {
+  let appConfig = hb_cli.appConfig?.create?.();
   // 创建环境变量文件
-  if (envConfig) {
-    await gen.generateCode(envConfig);
+  if (appConfig) {
+    config.genEnvConfigFile;
+    let filePath = config.genEnvConfigFile;
+    if (hb_cli?.appConfig?.output) {
+      filePath = path.join(config.workDir, hb_cli?.appConfig?.output);
+    }
+    await gen.generateCode(filePath, appConfig);
   }
 
   if (answers.changeVersion == true) {
@@ -112,7 +116,6 @@ async function handle(
               dayjs().format("YYYYMMDDHHmm") +
               ".ipa"
           );
-          
         } else if (appUrl) {
           // 安卓才打开浏览器，ios直接打开没用，所有不打开
           platform = "android";
@@ -145,7 +148,7 @@ async function handle(
       apps = await utils.buildAppResourceCli(packConfig);
 
       for (let i = 0; i < apps.length; i++) {
-        console.log("本地目录：",path.resolve(apps[i]));
+        console.log("本地目录：", path.resolve(apps[i]));
 
         // await utils.sleep(2000);
         utils.openDirectory(path.resolve(apps[i]));
@@ -158,11 +161,7 @@ async function handle(
     if (hooks.length) {
       await Promise.allSettled(hooks);
     }
-    if (
-      apps.length &&
-      answers.iscustom === false &&
-      ["android", "android,ios"].includes(answers.platform)
-    ) {
+    if (apkPath && answers.iscustom === false) {
       //正式版并且是安卓才启动文件服务
       server.init(apkPath);
     }

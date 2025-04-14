@@ -46,7 +46,7 @@ async function prompt(options) {
 
   let packConfig = hb_cli.packConfig?.();
   let manifestConfig = hb_cli.mergeManifestConfig?.();
-  let envConfig = hb_cli.createEnv?.();
+
   let versionMode = hb_cli?.version?.mode || "auto-increment";
 
   let VersionNameArr = manifest.versionName.split(".");
@@ -72,7 +72,7 @@ async function prompt(options) {
   }
   // console.log("读取pack配置", packConfig);
   // console.log("读取manifest配置", manifestConfig);
-  // console.log("读取env配置", envConfig);
+
 
   // 合并后的manifest
   const NewManifestConfig = utils.MergeManifestConfig(manifest, manifestConfig);
@@ -192,7 +192,6 @@ async function prompt(options) {
         NewManifestConfig,
         packConfig,
         newVersion,
-        envConfig,
         AndroidIpList
       )
     )
