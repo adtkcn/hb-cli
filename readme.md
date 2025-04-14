@@ -112,7 +112,7 @@ module.exports = ({ mode }) => {
      * @returns {any} 环境变量
      */
     appConfig:{
-      output:"src/config/HBuilderEnv.js", // 默认./HBuilderEnv.js
+      output:"./HBuilderEnv.js", // 默认./HBuilderEnv.js
       create(){
         var info = {
           dev: {
