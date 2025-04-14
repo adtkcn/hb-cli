@@ -1,3 +1,5 @@
+const path = require("path");
+
 const server = require("../server/server.js");
 
 const gen = require("../utils/gen.js");
@@ -77,6 +79,11 @@ async function handle(
   }
 
   if (answers.function == "打包") {
+    var OpenHBuilderCode = await utils.OpenHBuilder();
+    if (OpenHBuilderCode !== 0) {
+      return "打开HBuilder编辑器失败";
+    }
+
     // 是否打包
     let apps = [];
     let hooks = [];
@@ -104,6 +111,7 @@ async function handle(
               dayjs().format("YYYYMMDDHHmm") +
               ".ipa"
           );
+          
         } else if (appUrl) {
           // 安卓才打开浏览器，ios直接打开没用，所有不打开
           platform = "android";
@@ -113,8 +121,8 @@ async function handle(
 
           utils.openDefaultBrowser(url);
         }
-        console.log("本地目录：", appUrl);
-
+        console.log("本地文件：", appUrl);
+        utils.openDirectory(path.resolve(appUrl));
         if (hb_cli?.onPackEnd) {
           hooks.push(hb_cli.onPackEnd(appUrl, platform));
         }
@@ -123,31 +131,30 @@ async function handle(
       apps = await utils.buildWgtCli(packConfig);
 
       for (let i = 0; i < apps.length; i++) {
-        console.log("本地目录：", apps[i]);
+        console.log("本地文件：", path.resolve(apps[i]));
 
-        utils.openDirectory(apps[i]);
+        utils.openDirectory(path.resolve(apps[i]));
 
         if (hb_cli?.onPackEnd) {
-          hooks.push(hb_cli.onPackEnd(apps[i], "wgt"));
+          hooks.push(hb_cli.onPackEnd(path.resolve(apps[i]), "wgt"));
         }
       }
     } else if (answers.platform == "appResource") {
       apps = await utils.buildAppResourceCli(packConfig);
 
       for (let i = 0; i < apps.length; i++) {
-        console.log("本地目录：", apps[i]);
+        console.log("本地目录：",path.resolve(apps[i]));
 
-        utils.openDirectory(apps[i]);
+        // await utils.sleep(2000);
+        utils.openDirectory(path.resolve(apps[i]));
 
         if (hb_cli?.onPackEnd) {
-          hooks.push(hb_cli.onPackEnd(apps[i], "appResource"));
+          hooks.push(hb_cli.onPackEnd(path.resolve(apps[i]), "appResource"));
         }
       }
     }
     if (hooks.length) {
-      await Promise.allSettled(hooks).then((res) => {
-        console.log("上传结束", res);
-      });
+      await Promise.allSettled(hooks);
     }
     if (
       apps.length &&

@@ -219,7 +219,7 @@ function MergeHBuilderConfig(packConfig, info = {}) {
     ? path.join(workDir, newConfig.ios.profile)
     : "";
   newConfig.ios.certfile = newConfig.ios.certfile
-   ? path.join(workDir, newConfig.ios.certfile)
+    ? path.join(workDir, newConfig.ios.certfile)
     : "";
   return newConfig;
 }
@@ -264,132 +264,12 @@ function RunCli(cli, callback) {
     callback && callback(code);
   });
 }
-
-/**
- * 导出wgt包
- * @param {object} HBuilderConfig
- * @param {string} HBuilderConfig.project
- * @returns {Promise<Array>}
- */
-function buildWgtCli(HBuilderConfig) {
-  return new Promise((resolve, reject) => {
-    var apps = [];
-    RunCli(
-      [
-        "publish",
-        "--platform",
-        "APP",
-        "--type",
-        "wgt",
-        "--project",
-        HBuilderConfig.project,
-        "--name",
-        `${HBuilderConfig.project}.wgt`,
-      ],
-      function (code, data) {
-        if (code == 0) {
-          resolve(apps);
-        } else if (code == -1 && data) {
-          //自定义异常
-          console.log(data);
-          reject( data);
-        } else if (code == -2 && data) {
-          //进程正常返回数据
-          console.log(data);
-
-          if (data.indexOf(`导出成功，路径为：`) != -1) {
-            var appPath = data.split("导出成功，路径为：")[1];
-
-            if (!appPath) {
-              reject("打包的路径获取出错");
-              return;
-            }
-            apps.push(appPath);
-          }
-        } else if (code == -3 && data) {
-          //进程异常返回数据
-          console.log(data); // 追加一行
-          reject(data);
-        }
-      }
-    );
-  });
-}
-/**
- * 导出appResource
- * @param {object} HBuilderConfig
- * @param {string} HBuilderConfig.project
- * @returns {Promise<Array>}
- */
-function buildAppResourceCli(HBuilderConfig) {
-  return new Promise((resolve, reject) => {
-    var apps = [];
-    RunCli(
-      [
-        "publish",
-        "--platform",
-        "APP",
-        "--type",
-        "appResource",
-        "--project",
-        HBuilderConfig.project,
-      ],
-      function (code, data) {
-        if (code == 0) {
-          resolve(apps);
-        } else if (code == -1 && data) {
-          //自定义异常
-          console.log(data);
-          reject(data);
-        } else if (code == -2 && data) {
-          //进程正常返回数据
-          console.log(data);
-
-          if (data.indexOf(`导出成功，路径为：`) != -1) {
-            var appPath = data.split("导出成功，路径为：")[1];
-
-            if (!appPath) {
-              reject("打包的路径获取出错");
-              return;
-            }
-            apps.push(appPath);
-          }
-        } else if (code == -3 && data) {
-          //进程异常返回数据
-          console.log(data); // 追加一行
-          reject(data);
-        }
-      }
-    );
-  });
-}
-
-/**
- * 从字符串中提取首个URL地址
- * @param {string} str - 需要解析的原始字符串
- * @returns {string|null} 返回找到的第一个URL地址，未找到返回null
- */
-function GetUrl(str) {
-  const reg =
-    /(https?|http|ftp|file):\/\/[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]/g;
-  const strValue = str.match(reg);
-  if (strValue && strValue.length > 0) {
-    return strValue[0];
-  }
-  return null;
-}
-
 /**
  *
  * @param {boolean} isCustom 是不是自定义基座
  * @returns
  */
 async function buildApp(isCustom) {
-  var OpenHBuilderCode = await OpenHBuilder();
-  if (OpenHBuilderCode !== 0) {
-    return "打开HBuilder编辑器失败";
-  }
-
   return new Promise((resolve, reject) => {
     try {
       var apps = [];
@@ -454,42 +334,178 @@ async function buildApp(isCustom) {
     }
   });
 }
+/**
+ * 导出wgt包
+ * @param {object} HBuilderConfig
+ * @param {string} HBuilderConfig.project
+ * @returns {Promise<Array>}
+ */
+function buildWgtCli(HBuilderConfig) {
+  return new Promise((resolve, reject) => {
+    var apps = [];
+    RunCli(
+      [
+        "publish",
+        "--platform",
+        "APP",
+        "--type",
+        "wgt",
+        "--project",
+        HBuilderConfig.project,
+        "--name",
+        `${HBuilderConfig.project}.wgt`,
+      ],
+      function (code, data) {
+        if (code == 0) {
+          resolve(apps);
+        } else if (code == -1 && data) {
+          //自定义异常
+          console.log(data);
+          reject(data);
+        } else if (code == -2 && data) {
+          //进程正常返回数据
+          console.log(data);
+
+          if (data.indexOf(`导出成功，路径为：`) != -1) {
+            var appPath = data.split("导出成功，路径为：")[1];
+
+            if (!appPath) {
+              reject("打包的路径获取出错");
+              return;
+            }
+            //从appPath中截取以.wgt结尾
+            appPath = appPath.split(".wgt")[0] + ".wgt";
+            apps.push(appPath);
+          }
+        } else if (code == -3 && data) {
+          //进程异常返回数据
+          console.log(data); // 追加一行
+          reject(data);
+        }
+      }
+    );
+  });
+}
+/**
+ * 导出appResource
+ * @param {object} HBuilderConfig
+ * @param {string} HBuilderConfig.project
+ * @returns {Promise<Array>}
+ */
+function buildAppResourceCli(HBuilderConfig) {
+  return new Promise((resolve, reject) => {
+    var apps = [];
+    RunCli(
+      [
+        "publish",
+        "--platform",
+        "APP",
+        "--type",
+        "appResource",
+        "--project",
+        HBuilderConfig.project,
+      ],
+      function (code, data) {
+        if (code == 0) {
+          resolve(apps);
+        } else if (code == -1 && data) {
+          //自定义异常
+          console.log(data);
+          reject(data);
+        } else if (code == -2 && data) {
+          //进程正常返回数据
+          console.log(data);
+
+          if (data.indexOf(`导出成功，路径为：`) != -1) {
+            let appPath = data.split("导出成功，路径为：")[1];
+
+            if (!appPath) {
+              reject("打包的路径获取出错");
+              return;
+            }
+            //从appPath中截取以resources结尾
+            appPath = appPath.split("resources")[0] + "resources";
+            apps.push(appPath);
+          }
+        } else if (code == -3 && data) {
+          //进程异常返回数据
+          console.log(data); // 追加一行
+          reject(data);
+        }
+      }
+    );
+  });
+}
+
+/**
+ * 从字符串中提取首个URL地址
+ * @param {string} str - 需要解析的原始字符串
+ * @returns {string|null} 返回找到的第一个URL地址，未找到返回null
+ */
+function GetUrl(str) {
+  const reg =
+    /(https?|http|ftp|file):\/\/[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]/g;
+  const strValue = str.match(reg);
+  if (strValue && strValue.length > 0) {
+    return strValue[0];
+  }
+  return null;
+}
 
 /**
  * 打开指定目录:nodejs封装方法打开指定目录，兼容win,mac,linux
  * @param {string} filePath 文件路径
  */
 function openDirectory(filePath) {
-  const platform = process.platform;
+  return new Promise((resolve, reject) => {
+    const absolutePath = path.resolve(filePath);
 
-  // 获取文件的父目录
-  const parentDirectory = path.dirname(path.resolve(filePath));
+    // 检查路径是否存在
+    // if (!fs.existsSync(absolutePath)) {
+    //   console.error("路径不存在：", absolutePath);
+    //   return;
+    // }
 
-  // 根据操作系统选择合适的命令
-  let command;
-  switch (platform) {
-    case "win32": // Windows
-      command = `start ${parentDirectory}`;
-      break;
-    case "darwin": // macOS
-      command = `open ${parentDirectory}`;
-      break;
-    case "linux": // Linux
-      command = `xdg-open ${parentDirectory}`;
-      break;
-    default:
-      console.error("Unsupported platform:", platform);
-      return;
-  }
+    // 获取路径信息（文件 or 文件夹）
+    const isDirectory = fs.statSync(absolutePath).isDirectory();
+    let command;
 
-  // 使用child_process执行命令
-  cp.exec(command, (error) => {
-    if (error) {
-      console.error(`Error opening directory: ${error}`);
-      return;
+    if (process.platform === "win32") {
+      // Windows
+      if (isDirectory) {
+        command = `start ${absolutePath}`; // 直接打开文件夹
+      } else {
+        const parentDirectory = path.dirname(filePath);
+        command = `start ${parentDirectory}`; // 打开文件夹并
+      }
+    } else if (process.platform === "darwin") {
+      // macOS
+      if (isDirectory) {
+        command = `open "${absolutePath}"`; // 直接打开文件夹
+      } else {
+        command = `open -R "${absolutePath}"`; // 打开文件夹并定位到文件
+      }
+    } else {
+      // Linux (使用 xdg-open)
+      command = `xdg-open "${
+        isDirectory ? absolutePath : path.dirname(absolutePath)
+      }"`;
     }
-    console.log(`Directory opened successfully.`);
+
+    // 执行命令
+    cp.exec(command, (error) => {
+      if (error) {
+        console.error("Failed to open location:", error);
+        reject(error);
+        return;
+      }
+      resolve(0);
+    });
   });
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms)); 
 }
 module.exports = {
   openDefaultBrowser,
@@ -505,5 +521,5 @@ module.exports = {
   OpenWifiDebug,
   ConnectPhoneWithWifi,
   GetUrl,
-  openDirectory,
+  openDirectory,sleep
 };
