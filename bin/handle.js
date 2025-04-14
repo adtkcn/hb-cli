@@ -1,6 +1,6 @@
 const path = require("path");
 
-const server = require("../server/server.js");
+const server = require("../server/index.js");
 
 const gen = require("../utils/gen.js");
 const file = require("../utils/file.js");
@@ -86,6 +86,7 @@ async function handle(
 
     // 是否打包
     let apps = [];
+    let apkPath = "";
     let hooks = [];
     // appFileUrl是本地文件路径时，是安卓，https开头是ios在线地址
     if (["android", "ios", "android,ios"].includes(answers.platform)) {
@@ -115,11 +116,12 @@ async function handle(
         } else if (appUrl) {
           // 安卓才打开浏览器，ios直接打开没用，所有不打开
           platform = "android";
-          let url = `http://${utils.getLocalIP()}:${
-            config.port
-          }?link=${encodeURIComponent(appUrl)}`;
+          apkPath = appUrl;
+          // let url = `http://${utils.getLocalIP()}:${
+          //   config.port
+          // }?link=${encodeURIComponent(appUrl)}`;
 
-          utils.openDefaultBrowser(url);
+          // utils.openDefaultBrowser(url);
         }
         console.log("本地文件：", appUrl);
         utils.openDirectory(path.resolve(appUrl));
@@ -162,7 +164,7 @@ async function handle(
       ["android", "android,ios"].includes(answers.platform)
     ) {
       //正式版并且是安卓才启动文件服务
-      server.init();
+      server.init(apkPath);
     }
   }
 }

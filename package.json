@@ -18,10 +18,7 @@
     "dayjs": "^1.11.1",
     "iconv-lite": "^0.6.3",
     "inquirer": "^8.2.2",
-    "json5": "^2.2.1",
-    "koa": "^2.13.4",
-    "koa-router": "^10.1.1",
-    "koa-static": "^5.0.0"
+    "json5": "^2.2.1"
   },
   "directories": {
     "doc": "doc"
