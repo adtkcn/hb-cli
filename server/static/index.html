@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>局域网app下载</title>
+    <style>
+      html,
+      body {
+        height: 100%;
+        background-color: #ccc;
+      }
+
+      .qrcodeContainer {
+        width: 260px;
+        margin: auto;
+        padding-top: 50px;
+      }
+
+      #qrcode {
+        display: inline-block;
+        height: 260px;
+        width: 260px;
+        overflow: hidden;
+
+        padding: 10px;
+
+        box-sizing: border-box;
+        background-color: #fff;
+      }
+
+      #qrcode img {
+        width: 100%;
+      }
+
+      .tips {
+        text-align: center;
+        font-size: 18px;
+      }
+      .btns {
+        display: flex;
+        max-width: 500px;
+        margin: 20px auto 0;
+      }
+      .path {
+        flex: 1;
+        font-size: 14px;
+        cursor: pointer;
+        width: 200px;
+        padding: 10px;
+
+        border: 1px solid #000;
+        border-radius: 5px;
+        margin: 0 5px;
+        text-align: center;
+        color: #000;
+        text-decoration: none;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="qrcodeContainer">
+      <div id="qrcode"></div>
+    </div>
+    <div class="tips">
+      <div>扫码二维码下载App</div>
+      <div>手机需与电脑在同一局域网</div>
+    </div>
+    <div class="btns">
+      <div class="path" id="dir">打开文件所在目录</div>
+      <a class="path" href="/download"> 下载 </a>
+    </div>
+
+    <!-- <script src="./url.min.js"></script> -->
+    <script src="qrcode.min.js"></script>
+    <script>
+      var qrcodeText = location.origin + "/download"; // + "/download?link=" + encodeURIComponent(url("?link"));
+
+      var dir = document.getElementById("dir");
+
+      dir.onclick = function () {
+        fetch("/open")
+          .then(function (response) {
+            return response.json();
+          })
+          .then(function (myJson) {
+            console.log(myJson);
+          });
+      };
+      var qrcode = new QRCode(document.getElementById("qrcode"), {
+        text: qrcodeText,
+        width: 240,
+        height: 240,
+        colorDark: "#000000",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.L,
+      });
+    </script>
+  </body>
+</html>

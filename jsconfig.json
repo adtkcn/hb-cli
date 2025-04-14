@@ -1,0 +1,32 @@
+{
+  "compilerOptions": {
+    /* 基础配置 */
+    "target": "ES2020",
+    "module": "CommonJS",
+    "moduleResolution": "node",
+
+    "rootDir": ".",
+
+    /* 类型检查增强 */
+    "allowJs": true,            // 允许编译JS文件
+    "checkJs": true,            // 对JS文件进行类型检查
+    "strict": false,            // 关闭严格模式（渐进增强用）
+    "noImplicitAny": false,      // 禁止隐式any类型
+    "skipLibCheck": true,
+    
+    /* 类型声明生成 */
+    "declaration": true,        // 生成.d.ts类型文件
+    "emitDeclarationOnly": true,// 只生成类型文件
+    
+    /* 兼容性配置 */
+    "esModuleInterop": true,
+    "resolveJsonModule": true
+  },
+  
+  // "include": ["bin/​**​/*","utils/​**​/*"],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "​**​/*.test.js"
+  ]
+}

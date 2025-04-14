@@ -6,6 +6,7 @@ const JSON5 = require("json5");
 var iconv = require("iconv-lite");
 
 const config = require("../config/config.js");
+const { deepAssign } = require("./merge.js");
 
 var workDir = process.cwd();
 
@@ -70,20 +71,21 @@ function OpenHBuilder() {
   return new Promise((resolve, reject) => {
     try {
       var ls = cp.spawn(config.HBuilderCli, ["open"], {});
+
       ls.on("exit", function (code) {
         if (code === 0) {
-          console.log("打开编辑器 状态： 成功" + code);
+          console.log("打开HBuilder编辑器成功");
           // 给hbuilder加载时间
           setTimeout(() => {
             resolve(0);
           }, 4000);
         } else {
-          console.log("打开编辑器 状态： 失败" + code);
-          reject(code);
+          console.log("打开HBuilder编辑器失败");
+          reject(1);
         }
       });
     } catch (error) {
-      console.log("打开编辑器 错误", error);
+      console.log("打开HBuilder编辑器错误", error);
       reject(1);
     }
   });
@@ -137,14 +139,14 @@ function openDefaultBrowser(url) {
       cp.exec("start " + url);
       break;
     default:
-      cp.exec("xdg-open", [url]);
+      cp.exec(`xdg-open "${url}"`);
   }
 }
 
 /**
  * 读取工作目录配置文件
  * @param {string} FileName
- * @returns {Promise<object>}
+ * @returns {Promise<any>}
  */
 function readConfig(FileName) {
   return new Promise((resolve, reject) => {
@@ -167,7 +169,7 @@ function readConfig(FileName) {
 /**
  * 更改配置文件
  * @param {string} ConfigFilePath
- * @param {string} Config
+ * @param {string|object} Config
  * @returns {Promise<string>}
  */
 function WriteConfig(ConfigFilePath, Config = "") {
@@ -182,37 +184,55 @@ function WriteConfig(ConfigFilePath, Config = "") {
           console.log(err);
           return reject(err);
         }
-        fs.writeFileSync(ConfigFilePath, Config);
+        if (typeof Config == "string") {
+          fs.writeFileSync(ConfigFilePath, Config);
+        } else if (typeof Config == "object") {
+          fs.writeFileSync(
+            ConfigFilePath,
+            JSON.stringify(Config, undefined, "\t")
+          );
+        }
+
         resolve(ConfigFilePath);
       }
     );
   });
 }
 
-// 合并HBuilderConfig配置文件
-function MergeHBuilderConfig(HBuilderConfig = {}, info = {}) {
-  HBuilderConfig.android = Object.assign({}, HBuilderConfig.android, {
-    certfile: HBuilderConfig.android.certfile
-      ? path.join(workDir, HBuilderConfig.android.certfile)
-      : "",
-  });
-  HBuilderConfig.ios = Object.assign({}, HBuilderConfig.ios, {
-    profile: HBuilderConfig.ios.profile
-      ? path.join(workDir, HBuilderConfig.ios.profile)
-      : "",
-    certfile: HBuilderConfig.ios.certfile
-      ? path.join(workDir, HBuilderConfig.ios.certfile)
-      : "",
-  });
-
-  var newConfig = Object.assign({}, HBuilderConfig, info);
-  var str = JSON.stringify(newConfig, undefined, "\t");
-  return str;
+/**
+ * 合并HBuilderConfig配置文件
+ * @param {object} packConfig
+ * @param {object} packConfig.android
+ * @param {string} packConfig.android.certfile
+ * @param {object} packConfig.ios
+ * @param {string} packConfig.ios.profile
+ * @param {string} packConfig.ios.certfile
+ * @param {object} info
+ * @return {object}
+ */
+function MergeHBuilderConfig(packConfig, info = {}) {
+  var newConfig = deepAssign({}, packConfig, info);
+  newConfig.android.certfile = newConfig.android.certfile
+    ? path.join(workDir, newConfig.android.certfile)
+    : "";
+  newConfig.ios.profile = newConfig.ios.profile
+    ? path.join(workDir, newConfig.ios.profile)
+    : "";
+  newConfig.ios.certfile = newConfig.ios.certfile
+    ? path.join(workDir, newConfig.ios.certfile)
+    : "";
+  return newConfig;
 }
+/**
+ *
+ * @param {object} ManifestConfig
+ * @param {object} info
+ * @returns {object}
+ */
 function MergeManifestConfig(ManifestConfig = {}, info = {}) {
-  var newConfig = Object.assign({}, ManifestConfig, info);
-  var str = JSON.stringify(newConfig, undefined, "\t");
-  return str;
+  var newConfig = deepAssign({}, ManifestConfig, info);
+  // var str = JSON.stringify(newConfig, undefined, "\t");
+  return newConfig;
 }
 
 /**
@@ -244,128 +264,14 @@ function RunCli(cli, callback) {
     callback && callback(code);
   });
 }
-
-/**
- * 导出wgt包
- * @param {object} HBuilderConfig
- * @returns {Promise<Array>}
- */
-function buildWgtCli(HBuilderConfig) {
-  return new Promise((resolve, reject) => {
-    var apps = [];
-    RunCli(
-      [
-        "publish",
-        "--platform",
-        "APP",
-        "--type",
-        "wgt",
-        "--project",
-        HBuilderConfig.project,
-        "--name",
-        `${HBuilderConfig.project}.wgt`,
-      ],
-      function (code, data) {
-        if (code == 0) {
-          resolve(apps);
-        } else if (code == -1 && data) {
-          //自定义异常
-          console.log(data);
-          reject(-1, data);
-        } else if (code == -2 && data) {
-          //进程正常返回数据
-          console.log(data);
-
-          if (data.indexOf(`导出成功，路径为：`) != -1) {
-            var appPath = data.split("导出成功，路径为：")[1];
-
-            if (!appPath) {
-              reject("打包的路径获取出错");
-              return;
-            }
-            apps.push(appPath);
-          }
-        } else if (code == -3 && data) {
-          //进程异常返回数据
-          console.log(data); // 追加一行
-          reject(data);
-        }
-      }
-    );
-  });
-}
-/**
- * 导出appResource
- * @param {object} HBuilderConfig
- * @returns {Promise<Array>}
- */
-function buildAppResourceCli(HBuilderConfig) {
-  return new Promise((resolve, reject) => {
-    var apps = [];
-    RunCli(
-      [
-        "publish",
-        "--platform",
-        "APP",
-        "--type",
-        "appResource",
-        "--project",
-        HBuilderConfig.project,
-      ],
-      function (code, data) {
-        if (code == 0) {
-          resolve(apps);
-        } else if (code == -1 && data) {
-          //自定义异常
-          console.log(data);
-          reject(-1, data);
-        } else if (code == -2 && data) {
-          //进程正常返回数据
-          console.log(data);
-
-          if (data.indexOf(`导出成功，路径为：`) != -1) {
-            var appPath = data.split("导出成功，路径为：")[1];
-
-            if (!appPath) {
-              reject("打包的路径获取出错");
-              return;
-            }
-            apps.push(appPath);
-          }
-        } else if (code == -3 && data) {
-          //进程异常返回数据
-          console.log(data); // 追加一行
-          reject(data);
-        }
-      }
-    );
-  });
-}
-
-function GetUrl(str) {
-  const reg =
-    /(https?|http|ftp|file):\/\/[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]/g;
-  const strValue = str.match(reg);
-  if (strValue && strValue.length > 0) {
-    return strValue[0];
-  }
-  return null;
-}
-
 /**
  *
  * @param {boolean} isCustom 是不是自定义基座
  * @returns
  */
-
-function buildApp(isCustom) {
-  return new Promise(async (resolve, reject) => {
+async function buildApp(isCustom) {
+  return new Promise((resolve, reject) => {
     try {
-      var OpenHBuilderCode = await OpenHBuilder();
-      if (OpenHBuilderCode !== 0) {
-        reject("打开HBuilder编辑器失败");
-        return;
-      }
       var apps = [];
       RunCli(
         ["pack", "--config", config.ConfigFileTemp],
@@ -384,7 +290,7 @@ function buildApp(isCustom) {
           } else if (code == -1 && data) {
             //自定义异常
             console.log(data);
-            reject(-1, data);
+            reject(data);
           } else if (code == -2 && data) {
             //进程正常返回数据
             console.log(data);
@@ -428,39 +334,178 @@ function buildApp(isCustom) {
     }
   });
 }
+/**
+ * 导出wgt包
+ * @param {object} HBuilderConfig
+ * @param {string} HBuilderConfig.project
+ * @returns {Promise<Array>}
+ */
+function buildWgtCli(HBuilderConfig) {
+  return new Promise((resolve, reject) => {
+    var apps = [];
+    RunCli(
+      [
+        "publish",
+        "--platform",
+        "APP",
+        "--type",
+        "wgt",
+        "--project",
+        HBuilderConfig.project,
+        "--name",
+        `${HBuilderConfig.project}.wgt`,
+      ],
+      function (code, data) {
+        if (code == 0) {
+          resolve(apps);
+        } else if (code == -1 && data) {
+          //自定义异常
+          console.log(data);
+          reject(data);
+        } else if (code == -2 && data) {
+          //进程正常返回数据
+          console.log(data);
 
-// nodejs封装方法打开指定目录，兼容win,mac,linux
-function openDirectory(filePath) {
-  const platform = process.platform;
+          if (data.indexOf(`导出成功，路径为：`) != -1) {
+            var appPath = data.split("导出成功，路径为：")[1];
 
-    // 获取文件的父目录
-    const parentDirectory = path.dirname(path.resolve(filePath));
-
-  // 根据操作系统选择合适的命令
-  let command;
-  switch (platform) {
-    case 'win32': // Windows
-      command = `start ${parentDirectory}`;
-      break;
-    case 'darwin': // macOS
-      command = `open ${parentDirectory}`;
-      break;
-    case 'linux': // Linux
-      command = `xdg-open ${parentDirectory}`;
-      break;
-    default:
-      console.error('Unsupported platform:', platform);
-      return;
-  }
-
-  // 使用child_process执行命令
-  cp.exec(command, (error) => {
-    if (error) {
-      console.error(`Error opening directory: ${error}`);
-      return;
-    }
-    console.log(`Directory opened successfully.`);
+            if (!appPath) {
+              reject("打包的路径获取出错");
+              return;
+            }
+            //从appPath中截取以.wgt结尾
+            appPath = appPath.split(".wgt")[0] + ".wgt";
+            apps.push(appPath);
+          }
+        } else if (code == -3 && data) {
+          //进程异常返回数据
+          console.log(data); // 追加一行
+          reject(data);
+        }
+      }
+    );
   });
+}
+/**
+ * 导出appResource
+ * @param {object} HBuilderConfig
+ * @param {string} HBuilderConfig.project
+ * @returns {Promise<Array>}
+ */
+function buildAppResourceCli(HBuilderConfig) {
+  return new Promise((resolve, reject) => {
+    var apps = [];
+    RunCli(
+      [
+        "publish",
+        "--platform",
+        "APP",
+        "--type",
+        "appResource",
+        "--project",
+        HBuilderConfig.project,
+      ],
+      function (code, data) {
+        if (code == 0) {
+          resolve(apps);
+        } else if (code == -1 && data) {
+          //自定义异常
+          console.log(data);
+          reject(data);
+        } else if (code == -2 && data) {
+          //进程正常返回数据
+          console.log(data);
+
+          if (data.indexOf(`导出成功，路径为：`) != -1) {
+            let appPath = data.split("导出成功，路径为：")[1];
+
+            if (!appPath) {
+              reject("打包的路径获取出错");
+              return;
+            }
+            //从appPath中截取以resources结尾
+            appPath = appPath.split("resources")[0] + "resources";
+            apps.push(appPath);
+          }
+        } else if (code == -3 && data) {
+          //进程异常返回数据
+          console.log(data); // 追加一行
+          reject(data);
+        }
+      }
+    );
+  });
+}
+
+/**
+ * 从字符串中提取首个URL地址
+ * @param {string} str - 需要解析的原始字符串
+ * @returns {string|null} 返回找到的第一个URL地址，未找到返回null
+ */
+function GetUrl(str) {
+  const reg =
+    /(https?|http|ftp|file):\/\/[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]/g;
+  const strValue = str.match(reg);
+  if (strValue && strValue.length > 0) {
+    return strValue[0];
+  }
+  return null;
+}
+
+/**
+ * 打开指定目录:nodejs封装方法打开指定目录，兼容win,mac,linux
+ * @param {string} filePath 文件路径
+ */
+function openDirectory(filePath) {
+  return new Promise((resolve, reject) => {
+    const absolutePath = path.resolve(filePath);
+
+    // 检查路径是否存在
+    // if (!fs.existsSync(absolutePath)) {
+    //   console.error("路径不存在：", absolutePath);
+    //   return;
+    // }
+
+    // 获取路径信息（文件 or 文件夹）
+    const isDirectory = fs.statSync(absolutePath).isDirectory();
+    let command;
+
+    if (process.platform === "win32") {
+      // Windows
+      if (isDirectory) {
+        command = `start ${absolutePath}`; // 直接打开文件夹
+      } else {
+        const parentDirectory = path.dirname(filePath);
+        command = `start ${parentDirectory}`; // 打开文件夹并
+      }
+    } else if (process.platform === "darwin") {
+      // macOS
+      if (isDirectory) {
+        command = `open "${absolutePath}"`; // 直接打开文件夹
+      } else {
+        command = `open -R "${absolutePath}"`; // 打开文件夹并定位到文件
+      }
+    } else {
+      // Linux (使用 xdg-open)
+      command = `xdg-open "${
+        isDirectory ? absolutePath : path.dirname(absolutePath)
+      }"`;
+    }
+
+    // 执行命令
+    cp.exec(command, (error) => {
+      if (error) {
+        console.error("Failed to open location:", error);
+        reject(error);
+        return;
+      }
+      resolve(0);
+    });
+  });
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms)); 
 }
 module.exports = {
   openDefaultBrowser,
@@ -476,5 +521,5 @@ module.exports = {
   OpenWifiDebug,
   ConnectPhoneWithWifi,
   GetUrl,
-  openDirectory
+  openDirectory,sleep
 };
