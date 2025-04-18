@@ -44,7 +44,6 @@ async function handle(
   let appConfig = hb_cli.appConfig?.create?.();
   // 创建环境变量文件
   if (appConfig) {
-    config.genEnvConfigFile;
     let filePath = config.genEnvConfigFile;
     if (hb_cli?.appConfig?.output) {
       filePath = path.join(config.workDir, hb_cli?.appConfig?.output);
@@ -117,14 +116,8 @@ async function handle(
               ".ipa"
           );
         } else if (appUrl) {
-          // 安卓才打开浏览器，ios直接打开没用，所有不打开
           platform = "android";
           apkPath = appUrl;
-          // let url = `http://${utils.getLocalIP()}:${
-          //   config.port
-          // }?link=${encodeURIComponent(appUrl)}`;
-
-          // utils.openDefaultBrowser(url);
         }
         console.log("本地文件：", appUrl);
         utils.openDirectory(path.resolve(appUrl));

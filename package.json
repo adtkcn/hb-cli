@@ -1,6 +1,6 @@
 {
   "name": "@adtkcn/hb-cli",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "用于uniapp的打包工具，可切换环境变量、可多配置，切换证书，更改版本，wifi调试",
   "main": "./index.cjs",
   "types": "./index.d.ts",

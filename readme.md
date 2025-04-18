@@ -31,7 +31,11 @@ npx hb-cli --mode base
 https://hx.dcloud.net.cn/cli/pack?id=config
 
 ```js
-const { defineConfig } = require("@adtkcn/hb-cli");
+/**
+ * defineConfig:用于强化类型，可忽略
+ * deepAssign：深度合并对象，可能需要用到，可忽略
+ */
+const { defineConfig, deepAssign } = require("./index.cjs");
 
 /**
  *
@@ -136,7 +140,7 @@ module.exports = ({ mode }) => {
       /**
        * 自定义版本号（可选）
        * @param {string[]} VersionNameArr 版本号数组，如：[1, 0, 0]
-       * @returns {string} 版本号数组，如：1.0.0
+       * @returns {string} 版本号，如：1.0.0
        */
       customVersion: (VersionNameArr) => {
         console.log(VersionNameArr);
@@ -149,7 +153,7 @@ module.exports = ({ mode }) => {
     },
 
     /**
-     * 自己处理上传逻辑：因为上传文件类型多样，appResource打包后是目录,所以需要自己处理
+     * 打包回调：因为多种文件类型，appResource打包后是目录,所以需要自己处理
      * @param {string} filePath 文件路径
      * @param {"android"|"ios"| "appResource"| "wgt"} fileType 文件类型
      */
