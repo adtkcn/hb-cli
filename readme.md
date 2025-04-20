@@ -196,4 +196,4 @@ D:\办公软件\HBuilderX\plugins\launcher\tools\adbs\adb.exe connect 192.168.3.
 - [【腾讯云】轻量新用户上云福利，2核2G4M 低至 65元/年 ， 超大容量云硬盘 0.5折起！ ](https://cloud.tencent.com/act/cps/redirect?redirect=1079&cps_key=9084b7493fb6e3826a5c26322c534cf7&from=console)
 
 
-- [阿里云，名人不说暗话， 你能得到75折优惠，而我能得到5%的佣金](https://www.aliyun.com/minisite/goods?userCode=jnyrjc6i)
+- [【阿里云】你能得到75折优惠，而我能得到5%的佣金](https://www.aliyun.com/minisite/goods?userCode=jnyrjc6i)
