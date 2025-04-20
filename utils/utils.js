@@ -337,7 +337,8 @@ async function buildApp(isCustom) {
 /**
  * 导出wgt包
  * @param {object} HBuilderConfig
- * @param {string} HBuilderConfig.project
+ * @param {string} HBuilderConfig.project 项目名称
+ * @param {boolean} HBuilderConfig.isconfusion 是否混淆
  * @returns {Promise<Array>}
  */
 function buildWgtCli(HBuilderConfig) {
@@ -354,6 +355,7 @@ function buildWgtCli(HBuilderConfig) {
         HBuilderConfig.project,
         "--name",
         `${HBuilderConfig.project}.wgt`,
+        "--confuse",HBuilderConfig.isconfusion||false,//混淆
       ],
       function (code, data) {
         if (code == 0) {

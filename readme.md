@@ -19,11 +19,20 @@
 - 在项目根目录下创建配置文件 `hb-cli.config.js`
 - 系统变量里加入`HBuilder`，指向 HBuilder 编辑器安装目录
 ![环境变量](./doc/env.png)
-- 在项目下运行命令(可以将命令定义在`package.json`中方便使用)
+- 在项目下直接运行命令
 ```bash
 npx hb-cli --mode base
 ```
+可以将命令定义在`package.json`中方便使用
+```json
+{
+  "scripts": {
+    "build:dev": "hb-cli --mode dev",
+    "build:prod": "hb-cli --mode prod"
+  },
+}
 
+```
 ## hb-cli.config.js，内容如下:
 
 `packConfig`返回的对象都是官方配置，其中platform,iscustom字段无需填写
@@ -106,9 +115,6 @@ module.exports = ({ mode }) => {
     mergeManifestConfig() {
       return {
         name: "消息订阅_11111",
-        "app-plus": {
-          nvueStyleCompiler: "uni-app_11111",
-        },
       };
     },
     /**
@@ -185,3 +191,9 @@ module.exports = ({ mode }) => {
 D:\办公软件\HBuilderX\plugins\launcher\tools\adbs\adb.exe tcpip 5555
 D:\办公软件\HBuilderX\plugins\launcher\tools\adbs\adb.exe connect 192.168.3.2
 ```
+
+### 广告
+- [【腾讯云】轻量新用户上云福利，2核2G4M 低至 65元/年 ， 超大容量云硬盘 0.5折起！ ](https://cloud.tencent.com/act/cps/redirect?redirect=1079&cps_key=9084b7493fb6e3826a5c26322c534cf7&from=console)
+
+
+- [阿里云，名人不说暗话， 你能得到75折优惠，而我能得到5%的佣金](https://www.aliyun.com/minisite/goods?userCode=jnyrjc6i)

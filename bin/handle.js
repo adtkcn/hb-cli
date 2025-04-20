@@ -6,6 +6,7 @@ const gen = require("../utils/gen.js");
 const file = require("../utils/file.js");
 const config = require("../config/config.js");
 const utils = require("../utils/utils.js");
+const ad = require("../utils/ad.js");
 const dayjs = require("dayjs");
 /**
  * @typedef {import('../index')} AppConfig
@@ -158,6 +159,9 @@ async function handle(
       //正式版并且是安卓才启动文件服务
       server.init(apkPath);
     }
+
   }
+
+  ad.printAd();
 }
 module.exports = { handle };
