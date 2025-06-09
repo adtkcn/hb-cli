@@ -18,4 +18,7 @@ exports.HBuilderAdb = path.join(
   process.env.HBuilder || "",
   "plugins/launcher/tools/adbs/adb"
 );
-exports.HBuilderCli = path.join(process.env.HBuilder || "", "cli");
+exports.HBuilderCli =
+  process.platform === "darwin"
+    ? "/Applications/HBuilderX.app/Contents/MacOS/cli"
+    : path.join(process.env.HBuilder || "", "cli");

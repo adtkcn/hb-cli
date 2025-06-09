@@ -118,6 +118,17 @@ function getLocalIP() {
     }
   } else if (osType === "Linux") {
     ip = netInfo.eth0[0].address;
+  } else if (osType === "Darwin") {
+    // macOS系统类型标识
+    const interfaces = netInfo.en0 || netInfo.en1;
+    if (interfaces) {
+      for (let item of interfaces) {
+        if (item.family === "IPv4") {
+          ip = item.address;
+          break;
+        }
+      }
+    }
   }
 
   return ip;
@@ -355,7 +366,8 @@ function buildWgtCli(HBuilderConfig) {
         HBuilderConfig.project,
         "--name",
         `${HBuilderConfig.project}.wgt`,
-        "--confuse",HBuilderConfig.isconfusion||false,//混淆
+        "--confuse",
+        HBuilderConfig.isconfusion || false, //混淆
       ],
       function (code, data) {
         if (code == 0) {
@@ -507,7 +519,7 @@ function openDirectory(filePath) {
 }
 
 function sleep(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms)); 
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 module.exports = {
   openDefaultBrowser,
@@ -523,5 +535,6 @@ module.exports = {
   OpenWifiDebug,
   ConnectPhoneWithWifi,
   GetUrl,
-  openDirectory,sleep
+  openDirectory,
+  sleep,
 };
