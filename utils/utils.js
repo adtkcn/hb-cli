@@ -246,6 +246,28 @@ function MergeManifestConfig(ManifestConfig = {}, info = {}) {
   return newConfig;
 }
 
+function decodeBuffer(data) {
+    try {
+        // 1. 尝试直接使用 UTF-8 (适用于现代系统和软件)
+        let str = data.toString('utf8');
+        // 简单检测是否包含明显的乱码特征（根据实际情况调整）
+        // 如果字符串看起来正常，直接返回
+        if (!str.includes('��')) { // 这是一个常见的 UTF-8 解码失败占位符
+            return str;
+        }
+    // @ts-ignore
+    // eslint-disable-next-line no-unused-vars, no-empty
+    } catch (e) {}
+
+    try {
+        // 2. 尝试 GBK (适用于旧版 Windows 系统)
+        return iconv.decode(Buffer.from(data, 'binary'), 'gbk');
+        // eslint-disable-next-line no-unused-vars
+    } catch (e) {
+        // 3. 最后的兜底方案
+        return data.toString('utf8'); // 或者返回原始 Buffer
+    }
+}
 /**
  * 运行cli
  * @param {Array} cli
@@ -262,12 +284,14 @@ function RunCli(cli, callback) {
   var pack = cp.spawn(config.HBuilderCli, cli);
 
   pack.stdout.on("data", (data) => {
-    var str = iconv.decode(Buffer.from(data, "binary"), "GBK");
+    // console.log(data);
+    
+    var str = decodeBuffer(data);
     callback && callback(-2, str);
   });
 
   pack.stderr.on("data", (data) => {
-    var str = iconv.decode(Buffer.from(data, "binary"), "GBK");
+    var str = decodeBuffer(data)
     callback && callback(-3, str);
   });
 

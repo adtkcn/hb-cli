@@ -24,3 +24,4 @@ manifest.json
 hb-cli.config.js
 .hbuilderx
 HBuilderEnv.js
+.npmrc

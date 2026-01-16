@@ -44,7 +44,7 @@ https://hx.dcloud.net.cn/cli/pack?id=config
  * defineConfig:用于强化类型，可忽略
  * deepAssign：深度合并对象，可能需要用到，可忽略
  */
-const { defineConfig, deepAssign } = require("./index.cjs");
+const { defineConfig, deepAssign } = require("@adtkcn/hb-cli");
 
 /**
  *
