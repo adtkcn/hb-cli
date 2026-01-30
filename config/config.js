@@ -16,7 +16,7 @@ exports.genEnvConfigFile = path.join(workDir, "./HBuilderEnv.js");
 // 用到的工具
 exports.HBuilderAdb = path.join(
   process.env.HBuilder || "",
-  "plugins/launcher/tools/adbs/adb"
+  "plugins/launcher-tools/tools/adbs/adb" // 旧版路径"plugins/launcher/tools/adbs/adb"  
 );
 exports.HBuilderCli =
   process.platform === "darwin"
