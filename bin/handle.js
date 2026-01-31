@@ -6,8 +6,7 @@ const gen = require("../utils/gen.js");
 const file = require("../utils/file.js");
 const config = require("../config/config.js");
 const utils = require("../utils/utils.js");
-
-const dayjs = require("dayjs");
+ 
 /**
  * @typedef {import('../index')} AppConfig
  */
@@ -113,7 +112,7 @@ async function handle(
             config.workDir + "/unpackage/release/ipa",
             NewManifestConfig.name +
               "_" +
-              dayjs().format("YYYYMMDDHHmm") +
+              utils.formatDate("YYYYMMDDHHmm") +
               ".ipa"
           );
         } else if (appUrl) {

@@ -1,3 +1,6 @@
+# v2.0.4
+修复wifi使用的adb路径不对
+
 # v2.0.0
 配置文件从`HBuilderConfig.json`改为`hb-cli.config.js`
 

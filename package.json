@@ -1,6 +1,6 @@
 {
   "name": "@adtkcn/hb-cli",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "description": "用于uniapp的打包工具，可切换环境变量、可多配置，切换证书，更改版本，wifi调试",
   "main": "./index.cjs",
   "types": "./index.d.ts",
@@ -14,10 +14,9 @@
   "author": "adtkcn",
   "license": "ISC",
   "dependencies": {
-    "commander": "^13.1.0",
-    "dayjs": "^1.11.1",
-    "iconv-lite": "^0.6.3",
-    "inquirer": "^8.2.2",
+    "commander": "^14.0.3",
+    "iconv-lite": "^0.7.2",
+    "inquirer": "^12.11.1",
     "json5": "^2.2.1"
   },
   "directories": {
@@ -42,8 +41,8 @@
   },
   "homepage": "https://github.com/adtkcn/hb-cli",
   "devDependencies": {
-    "@eslint/js": "^9.5.0",
-    "eslint": "^9.5.0",
-    "globals": "^15.6.0"
+    "@eslint/js": "^9.39.2",
+    "eslint": "^9.39.2",
+    "globals": "^17.2.0"
   }
 }

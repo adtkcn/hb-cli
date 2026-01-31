@@ -1,5 +1,4 @@
-const inquirer = require("inquirer");
-const dayjs = require("dayjs");
+const inquirer = require("inquirer"); 
 const utils = require("../utils/utils.js");
 
 const config = require("../config/config.js");
@@ -59,7 +58,7 @@ async function prompt(options) {
       break;
     }
     case "date":
-      newVersion = dayjs().format("YYYY.MM.DDHHmm");
+      newVersion = utils.formatDate("YYYY.MM.DDHHmm");
       break;
     case "custom":
       newVersion = hb_cli.version?.customVersion?.([...VersionNameArr]);
@@ -80,13 +79,13 @@ async function prompt(options) {
   let AndroidIpList = [];
   try {
     AndroidIpList = await utils.readConfig(config.IpFile);
+  // eslint-disable-next-line no-unused-vars
   } catch (error) {
     AndroidIpList = [];
     // console.log(error);
   }
-
-  inquirer
-    .prompt([
+  // console.log('inquirer',inquirer.default.prompt); 
+  inquirer.default.prompt([
       {
         type: "list",
         message: "选择功能",
